@@ -2,9 +2,9 @@ import { createTheme } from '@mantine/core'
 
 export const theme = createTheme({
   primaryColor: 'orange',
-  fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
+  fontFamily: 'Segoe UI, Trebuchet MS, sans-serif',
   headings: {
-    fontFamily: 'Georgia, Times New Roman, serif',
+    fontFamily: 'Segoe UI, Trebuchet MS, sans-serif',
   },
   colors: {
     orange: [
@@ -21,4 +21,7 @@ export const theme = createTheme({
     ],
   },
   defaultRadius: 'lg',
+  black: '#161616',
+  white: '#ffffff',
+  primaryShade: 5,
 })

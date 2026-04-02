@@ -51,8 +51,8 @@ class TelegramService {
     webApp.ready()
     webApp.expand()
 
-    const headerColor = '#fff8ee'
-    const backgroundColor = webApp.themeParams?.bg_color ?? '#f6efe5'
+    const headerColor = '#f6f6f6'
+    const backgroundColor = webApp.themeParams?.bg_color ?? '#f6f6f6'
 
     webApp.setHeaderColor?.(headerColor)
     webApp.setBackgroundColor?.(backgroundColor)
