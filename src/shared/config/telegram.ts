@@ -1,0 +1,1 @@
+export const TELEGRAM_MOBILE_WIDTH = 430
