@@ -34,3 +34,23 @@ select {
   width: 100%;
   min-height: 100dvh;
 }
+
+body,
+#root {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none;
+}
+
+.home-main-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.home-main-scroll::-webkit-scrollbar {
+  display: none;
+}

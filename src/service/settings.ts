@@ -39,6 +39,6 @@ export function useCompanySettings(companyId?: string) {
     queryKey: ['company-settings', companyId],
     queryFn: () => getCompanySettings(companyId!),
     enabled: Boolean(companyId),
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   })
 }

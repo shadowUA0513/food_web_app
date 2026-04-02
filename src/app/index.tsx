@@ -3,15 +3,16 @@ import '@mantine/notifications/styles.css'
 
 import { AppProvider } from './providers/app-provider'
 import './styles/index.css'
-import { HomePage } from '../pages/home-page'
+import { AppRouter } from './router'
 import { initializeTelegramApp } from '../shared/services/telegram.service'
+import '../shared/i18n'
 
 initializeTelegramApp()
 
 export function App() {
   return (
     <AppProvider>
-      <HomePage />
+      <AppRouter />
     </AppProvider>
   )
 }

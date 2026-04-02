@@ -29,6 +29,7 @@ export function useCompanyMenu(companyId?: string) {
     queryKey: ["company-menu", companyId],
     queryFn: () => getCompanyMenu(companyId!),
     enabled: Boolean(companyId),
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
+    
   });
 }
