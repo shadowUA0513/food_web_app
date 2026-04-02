@@ -32,7 +32,6 @@ interface CartDrawerProps {
 export function CartDrawer({
   opened,
   onClose,
-  locale,
   cartList,
   cartTotalPrice,
   isDark,

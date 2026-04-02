@@ -39,7 +39,6 @@ interface MenuContentProps {
 }
 
 export function MenuContent({
-  locale,
   settings,
   visibleCategories,
   isLoading,
@@ -103,7 +102,9 @@ export function MenuContent({
               onClick={onOpenSettings}
               color={isDark ? "gray" : "dark"}
               style={{
-                background: isDark ? "rgba(255,255,255,0.05)" : "rgba(15,23,42,0.05)",
+                background: isDark
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(15,23,42,0.05)",
               }}
             >
               <IconUserCircle size={24} />
@@ -138,7 +139,9 @@ export function MenuContent({
               {t("menu.loadError")}
             </Text>
             <Text size="sm" c="red.6" mt={4}>
-              {error instanceof Error ? error.message : t("common.unknownError")}
+              {error instanceof Error
+                ? error.message
+                : t("common.unknownError")}
             </Text>
           </Paper>
         ) : null}
@@ -193,12 +196,25 @@ export function MenuContent({
                   </Box>
 
                   <Stack gap={6} px="md" pb="md" pt="xs">
-                    <Text fw={800} fz="0.98rem" lh={1.15} c={titleColor} lineClamp={2}>
+                    <Text
+                      fw={800}
+                      fz="0.98rem"
+                      lh={1.15}
+                      c={titleColor}
+                      lineClamp={2}
+                    >
                       {getLocalizedValue(product.name_uz, product.name_ru)}
                     </Text>
 
-                    <Text size="xs" c={textColor} lh={1.35} lineClamp={3} mih={48}>
-                      {product.description || t("menu.productFallbackDescription")}
+                    <Text
+                      size="xs"
+                      c={textColor}
+                      lh={1.35}
+                      lineClamp={3}
+                      mih={48}
+                    >
+                      {product.description ||
+                        t("menu.productFallbackDescription")}
                     </Text>
 
                     <Group justify="space-between" align="end" gap="xs" mt={2}>
