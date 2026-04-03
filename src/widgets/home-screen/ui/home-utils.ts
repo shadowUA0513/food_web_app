@@ -2,18 +2,24 @@ export function getCompanyId() {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  if (params.get("company_id")) {
-    return params.get("company_id");
+  const companyIdFromSearch = params.get("company_id") ?? undefined;
+  if (companyIdFromSearch) {
+    return companyIdFromSearch;
   }
 
-  if (params.get("companyId")) {
-    return params.get("companyId");
+  const legacyCompanyIdFromSearch = params.get("companyId") ?? undefined;
+  if (legacyCompanyIdFromSearch) {
+    return legacyCompanyIdFromSearch;
   }
 
   const hashQuery = url.hash.includes("?") ? url.hash.split("?")[1] : "";
   const hashParams = new URLSearchParams(hashQuery);
 
-  return hashParams.get("company_id") ?? hashParams.get("companyId") ?? undefined;
+  return (
+    hashParams.get("company_id") ??
+    hashParams.get("companyId") ??
+    undefined
+  );
 }
 
 export function formatPrice(price: number) {
