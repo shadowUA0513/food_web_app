@@ -1,11 +1,19 @@
-﻿const DEFAULT_COMPANY_ID = "08d016ac-f8a2-4273-8219-806d5dd1fba1";
-
 export function getCompanyId() {
-  const params = new URLSearchParams(window.location.search);
+  const url = new URL(window.location.href);
+  const params = url.searchParams;
 
-  return (
-    params.get("company_id") ?? params.get("companyId") ?? DEFAULT_COMPANY_ID
-  );
+  if (params.get("company_id")) {
+    return params.get("company_id");
+  }
+
+  if (params.get("companyId")) {
+    return params.get("companyId");
+  }
+
+  const hashQuery = url.hash.includes("?") ? url.hash.split("?")[1] : "";
+  const hashParams = new URLSearchParams(hashQuery);
+
+  return hashParams.get("company_id") ?? hashParams.get("companyId") ?? undefined;
 }
 
 export function formatPrice(price: number) {

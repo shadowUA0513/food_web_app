@@ -18,20 +18,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCompanyMenu } from "../../../service/menu";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import { useCartStore } from "../../../shared/store/cart-store";
-
-const DEFAULT_COMPANY_ID = "08d016ac-f8a2-4273-8219-806d5dd1fba1";
-
-function getCompanyId() {
-  const params = new URLSearchParams(window.location.search);
-
-  return (
-    params.get("company_id") ?? params.get("companyId") ?? DEFAULT_COMPANY_ID
-  );
-}
-
-function formatPrice(price: number) {
-  return `${new Intl.NumberFormat("ru-RU").format(price)} UZS`;
-}
+import { formatPrice, getCompanyId } from "../../../widgets/home-screen/ui/home-utils";
 
 export function ProductDetailsPage() {
   const { t, i18n } = useTranslation();
