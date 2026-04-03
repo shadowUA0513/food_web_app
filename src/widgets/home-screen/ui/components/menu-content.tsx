@@ -12,7 +12,7 @@
   Text,
   Title,
 } from "@mantine/core";
-import { IconUserCircle } from "@tabler/icons-react";
+import { IconShoppingBagPlus, IconUserCircle } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../../shared/config/telegram";
 import type { MenuCategoryWithProducts, Product } from "../../../../types/menu";
@@ -34,6 +34,7 @@ interface MenuContentProps {
   mutedBg: string;
   onOpenSettings: () => void;
   onOpenProduct: (product: Product) => void;
+  onAddToCart: (product: Product) => void;
   getLocalizedValue: (nameUz: string, nameRu: string) => string;
   formatPrice: (price: number) => string;
 }
@@ -52,65 +53,83 @@ export function MenuContent({
   mutedBg,
   onOpenSettings,
   onOpenProduct,
+  onAddToCart,
   getLocalizedValue,
   formatPrice,
 }: MenuContentProps) {
   const { t } = useTranslation();
+  const headerHeight = 104;
+  const headerOffset = 14;
 
   return (
     <Box mih="100dvh" bg={pageBg} px={12} py={14}>
       <Stack maw={TELEGRAM_MOBILE_WIDTH} mx="auto" gap="lg">
-        <Paper
-          radius={24}
-          p="md"
+        <Box
           style={{
-            background: surfaceBg,
-            border: isDark
-              ? "1px solid rgba(255,255,255,0.06)"
-              : "1px solid rgba(255,255,255,0.85)",
-            boxShadow: isDark
-              ? "0 14px 34px rgba(0, 0, 0, 0.28)"
-              : "0 12px 28px rgba(15, 23, 42, 0.06)",
+            position: "fixed",
+            top: headerOffset,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "calc(100% - 24px)",
+            maxWidth: TELEGRAM_MOBILE_WIDTH,
+            zIndex: 120,
           }}
         >
-          <Group justify="space-between" align="center" wrap="nowrap">
-            <Group gap="sm" wrap="nowrap">
-              {settings?.logo_url ? (
-                <Image
-                  src={settings.logo_url}
-                  alt={settings.name}
-                  w={44}
-                  h={44}
-                  radius="xl"
-                  fit="cover"
-                />
-              ) : null}
-              <Stack gap={2}>
-                <Title order={1} fz="1.2rem" fw={900} lh={1.1} c={titleColor}>
-                  {settings?.name ?? t("menu.titleFallback")}
-                </Title>
-                <Text size="sm" c={textColor}>
-                  {t("menu.subtitle")}
-                </Text>
-              </Stack>
-            </Group>
+          <Paper
+            radius={24}
+            p="md"
+            style={{
+              background: surfaceBg,
+              border: isDark
+                ? "1px solid rgba(255,255,255,0.06)"
+                : "1px solid rgba(255,255,255,0.85)",
+              boxShadow: isDark
+                ? "0 14px 34px rgba(0, 0, 0, 0.28)"
+                : "0 12px 28px rgba(15, 23, 42, 0.06)",
+              backdropFilter: "blur(18px)",
+            }}
+          >
+            <Group justify="space-between" align="center" wrap="nowrap">
+              <Group gap="sm" wrap="nowrap">
+                {settings?.logo_url ? (
+                  <Image
+                    src={settings.logo_url}
+                    alt={settings.name}
+                    w={44}
+                    h={44}
+                    radius="xl"
+                    fit="cover"
+                  />
+                ) : null}
+                <Stack gap={2}>
+                  <Title order={1} fz="1.2rem" fw={900} lh={1.1} c={titleColor}>
+                    {settings?.name ?? t("menu.titleFallback")}
+                  </Title>
+                  <Text size="sm" c={textColor}>
+                    {t("menu.subtitle")}
+                  </Text>
+                </Stack>
+              </Group>
 
-            <ActionIcon
-              size={42}
-              radius="xl"
-              variant="subtle"
-              onClick={onOpenSettings}
-              color={isDark ? "gray" : "dark"}
-              style={{
-                background: isDark
-                  ? "rgba(255,255,255,0.05)"
-                  : "rgba(15,23,42,0.05)",
-              }}
-            >
-              <IconUserCircle size={24} />
-            </ActionIcon>
-          </Group>
-        </Paper>
+              <ActionIcon
+                size={42}
+                radius="xl"
+                variant="subtle"
+                onClick={onOpenSettings}
+                color={isDark ? "gray" : "dark"}
+                style={{
+                  background: isDark
+                    ? "rgba(255,255,255,0.05)"
+                    : "rgba(15,23,42,0.05)",
+                }}
+              >
+                <IconUserCircle size={24} />
+              </ActionIcon>
+            </Group>
+          </Paper>
+        </Box>
+
+        <Box h={headerHeight} />
 
         <Group gap="xs" justify="space-between">
           <Text size="sm" fw={700} c={textColor}>
@@ -157,10 +176,16 @@ export function MenuContent({
             <SimpleGrid cols={2} spacing={12} verticalSpacing={12}>
               {products.map((product) => (
                 <Card
-                  component="button"
-                  type="button"
                   key={product.id}
                   onClick={() => onOpenProduct(product)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onOpenProduct(product);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                   radius={18}
                   p={0}
                   style={{
@@ -218,14 +243,44 @@ export function MenuContent({
                     </Text>
 
                     <Group justify="space-between" align="end" gap="xs" mt={2}>
-                      <Text fw={900} fz="1.1rem" c={titleColor}>
-                        {formatPrice(product.price)}
-                      </Text>
-                      {!product.is_available ? (
-                        <Text size="10px" fw={800} c="#df4b41" tt="uppercase">
-                          {t("product.closed")}
+                      <Stack gap={2}>
+                        <Text fw={900} fz="1.1rem" c={titleColor}>
+                          {formatPrice(product.price)}
                         </Text>
-                      ) : null}
+                        {!product.is_available ? (
+                          <Text size="10px" fw={800} c="#df4b41" tt="uppercase">
+                            {t("product.closed")}
+                          </Text>
+                        ) : null}
+                      </Stack>
+
+                      <ActionIcon
+                        size={40}
+                        radius="xl"
+                        variant={product.is_available ? "filled" : "light"}
+                        color="orange"
+                        disabled={!product.is_available}
+                        aria-label={t("product.addToCart")}
+                        onClick={(event) => {
+                          event.stopPropagation();
+
+                          if (!product.is_available) {
+                            return;
+                          }
+
+                          onAddToCart(product);
+                        }}
+                        style={{
+                          boxShadow: product.is_available
+                            ? isDark
+                              ? "0 10px 18px rgba(247,143,38,0.28)"
+                              : "0 10px 18px rgba(247,143,38,0.22)"
+                            : "none",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <IconShoppingBagPlus size={20} />
+                      </ActionIcon>
                     </Group>
                   </Stack>
                 </Card>

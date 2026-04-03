@@ -1,10 +1,12 @@
 ﻿import { AppShell, useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { IconCheck } from "@tabler/icons-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCompanyMenu } from "../../../service/menu";
 import { useCompanySettings } from "../../../service/settings";
+import { showAppNotification } from "../../../shared/lib/notifications";
 import { useCartStore } from "../../../shared/store/cart-store";
 import type { Product } from "../../../types/menu";
 import { CartDrawer } from "./components/cart-drawer";
@@ -16,7 +18,7 @@ import type { Locale } from "./home-screen-types";
 
 export function HomeScreen() {
   const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
   const navigate = useNavigate();
@@ -38,8 +40,10 @@ export function HomeScreen() {
 
   const cartTotalCount = useCartStore((state) => state.totalCount);
   const cartItems = useCartStore((state) => state.items);
+  const addItem = useCartStore((state) => state.addItem);
   const incrementItem = useCartStore((state) => state.incrementItem);
   const decrementItem = useCartStore((state) => state.decrementItem);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const cartList = useMemo(() => Object.values(cartItems), [cartItems]);
   const cartTotalPrice = useMemo(
@@ -81,6 +85,24 @@ export function HomeScreen() {
     });
   }
 
+  function openCheckoutPage() {
+    navigate({
+      pathname: "/checkout",
+      search: location.search,
+    });
+  }
+
+  function addProductToCart(product: Product) {
+    addItem(product, 1);
+    showAppNotification({
+      title: t("cart.addedTitle"),
+      message: t("cart.addedMessage", {
+        product: getLocalizedValue(product.name_uz, product.name_ru),
+      }),
+      icon: <IconCheck size={16} />,
+    });
+  }
+
   return (
     <AppShell bg={pageBg} padding={0}>
       <SettingsDrawer
@@ -101,7 +123,6 @@ export function HomeScreen() {
       <CartDrawer
         opened={isCartOpened}
         onClose={closeCartDrawer}
-        locale={locale}
         cartList={cartList}
         cartTotalPrice={cartTotalPrice}
         isDark={isDark}
@@ -111,8 +132,10 @@ export function HomeScreen() {
         mutedBg={mutedBg}
         incrementItem={incrementItem}
         decrementItem={decrementItem}
+        clearCart={clearCart}
         getLocalizedValue={getLocalizedValue}
         formatPrice={formatPrice}
+        onCheckout={openCheckoutPage}
       />
 
       <AppShell.Main className="home-main-scroll" style={{ overflowY: "auto" }}>
@@ -131,6 +154,7 @@ export function HomeScreen() {
           mutedBg={mutedBg}
           onOpenSettings={openSettings}
           onOpenProduct={openProductPage}
+          onAddToCart={addProductToCart}
           getLocalizedValue={getLocalizedValue}
           formatPrice={formatPrice}
         />

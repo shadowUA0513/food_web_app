@@ -1,5 +1,6 @@
 ﻿import {
   ActionIcon,
+  Button,
   Drawer,
   Group,
   Image,
@@ -10,12 +11,9 @@
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { CartItem } from "../../../../shared/store/cart-store";
-import type { Locale } from "../home-screen-types";
-
 interface CartDrawerProps {
   opened: boolean;
   onClose: () => void;
-  locale: Locale;
   cartList: CartItem[];
   cartTotalPrice: number;
   isDark: boolean;
@@ -25,8 +23,10 @@ interface CartDrawerProps {
   mutedBg: string;
   incrementItem: (productId: string) => void;
   decrementItem: (productId: string) => void;
+  clearCart: () => void;
   getLocalizedValue: (nameUz: string, nameRu: string) => string;
   formatPrice: (price: number) => string;
+  onCheckout: () => void;
 }
 
 export function CartDrawer({
@@ -41,8 +41,10 @@ export function CartDrawer({
   mutedBg,
   incrementItem,
   decrementItem,
+  clearCart,
   getLocalizedValue,
   formatPrice,
+  onCheckout,
 }: CartDrawerProps) {
   const { t } = useTranslation();
 
@@ -159,6 +161,37 @@ export function CartDrawer({
                 </Text>
               </Group>
             </Paper>
+            <Group grow>
+              <Button
+                size="md"
+                radius="xl"
+                variant="light"
+                color="red"
+                onClick={clearCart}
+                styles={{
+                  root: {
+                    height: 50,
+                    fontWeight: 800,
+                  },
+                }}
+              >
+                {t("cart.clearAll")}
+              </Button>
+              <Button
+                size="md"
+                radius="xl"
+                color="orange"
+                onClick={onCheckout}
+                styles={{
+                  root: {
+                    height: 50,
+                    fontWeight: 800,
+                  },
+                }}
+              >
+                {t("cart.accept")}
+              </Button>
+            </Group>
           </>
         )}
       </Stack>

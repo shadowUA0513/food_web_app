@@ -29,7 +29,10 @@ export function useCompanyMenu(companyId?: string) {
     queryKey: ["company-menu", companyId],
     queryFn: () => getCompanyMenu(companyId!),
     enabled: Boolean(companyId),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    
+    refetchOnReconnect: false,
   });
 }

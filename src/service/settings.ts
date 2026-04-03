@@ -39,6 +39,10 @@ export function useCompanySettings(companyId?: string) {
     queryKey: ['company-settings', companyId],
     queryFn: () => getCompanySettings(companyId!),
     enabled: Boolean(companyId),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 }

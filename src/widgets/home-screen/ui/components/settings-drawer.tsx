@@ -1,5 +1,6 @@
-﻿import {
+import {
   ActionIcon,
+  Box,
   Drawer,
   Group,
   Paper,
@@ -28,6 +29,26 @@ interface SettingsDrawerProps {
   mutedBg: string;
 }
 
+const languageOptions: Array<{
+  value: Locale;
+  label: string;
+  caption: string;
+  accent: string;
+}> = [
+  {
+    value: "uz",
+    label: "O'zbekcha",
+    caption: "Latin script",
+    accent: "#f78f26",
+  },
+  {
+    value: "ru",
+    label: "Russian",
+    caption: "Cyrillic script",
+    accent: "#4f8cff",
+  },
+];
+
 export function SettingsDrawer({
   opened,
   onClose,
@@ -42,6 +63,19 @@ export function SettingsDrawer({
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
 
+  const cardBorder = isDark
+    ? "1px solid rgba(255,255,255,0.07)"
+    : "1px solid rgba(15,23,42,0.08)";
+  const subtleBorder = isDark
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid rgba(15,23,42,0.07)";
+  const panelBg = isDark
+    ? "linear-gradient(180deg, rgba(29,33,42,0.98) 0%, rgba(21,24,31,0.98) 100%)"
+    : "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,248,252,0.98) 100%)";
+  const heroBg = isDark
+    ? "radial-gradient(circle at top left, rgba(247,143,38,0.22), transparent 44%), linear-gradient(180deg, #1f232d 0%, #171a21 100%)"
+    : "radial-gradient(circle at top left, rgba(247,143,38,0.16), transparent 42%), linear-gradient(180deg, #fffaf4 0%, #ffffff 100%)";
+
   return (
     <Drawer
       opened={opened}
@@ -50,135 +84,199 @@ export function SettingsDrawer({
       title={t("settings.title")}
       padding="lg"
       styles={{
-        content: { background: surfaceBg },
-        header: { background: surfaceBg, color: titleColor },
-        title: { fontWeight: 800 },
-        body: { background: surfaceBg },
+        content: { background: panelBg },
+        header: {
+          background: "transparent",
+          color: titleColor,
+          paddingBottom: 8,
+        },
+        title: {
+          fontWeight: 900,
+          fontSize: "1.05rem",
+          letterSpacing: "-0.02em",
+        },
+        body: {
+          background: "transparent",
+        },
       }}
     >
       <Stack gap="lg">
         <Paper
-          radius={20}
-          p="md"
+          radius={28}
+          p="lg"
           style={{
-            background: mutedBg,
-            border: isDark
-              ? "1px solid rgba(255,255,255,0.05)"
-              : "1px solid rgba(17,24,39,0.06)",
+            position: "relative",
+            overflow: "hidden",
+            background: heroBg,
+            border: cardBorder,
+            boxShadow: isDark
+              ? "0 18px 38px rgba(0,0,0,0.32)"
+              : "0 20px 40px rgba(15,23,42,0.08)",
           }}
         >
-          <Stack gap="md">
-            <Group justify="space-between" align="center">
-              <Group gap="sm">
-                <ActionIcon size={38} radius="xl" variant="light" color="orange">
-                  <IconLanguage size={18} />
-                </ActionIcon>
-                <Stack gap={0}>
-                  <Text fw={800} c={titleColor}>
-                    {t("settings.language")}
-                  </Text>
-                  <Text size="xs" c={textColor}>
-                    {t("settings.chooseLanguage")}
-                  </Text>
-                </Stack>
-              </Group>
-            </Group>
+          <Box
+            style={{
+              position: "absolute",
+              top: -44,
+              right: -34,
+              width: 140,
+              height: 140,
+              borderRadius: "50%",
+              background: isDark
+                ? "rgba(255,255,255,0.04)"
+                : "rgba(247,143,38,0.09)",
+            }}
+          />
 
-            <Group grow>
-              <Paper
-                component="button"
-                type="button"
+          <Stack gap="lg" style={{ position: "relative" }}>
+            <Group gap="sm" align="flex-start" wrap="nowrap">
+              <ActionIcon
+                size={48}
                 radius="xl"
-                p="sm"
-                onClick={() => onLocaleChange("uz")}
+                variant="filled"
+                color="orange"
                 style={{
-                  cursor: "pointer",
-                  background:
-                    locale === "uz" ? (isDark ? "#252a33" : "#ffffff") : "transparent",
-                  border:
-                    locale === "uz"
-                      ? `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(17,24,39,0.08)"}`
-                      : "1px solid transparent",
-                  boxShadow:
-                    locale === "uz" && !isDark
-                      ? "0 8px 20px rgba(15, 23, 42, 0.06)"
-                      : "none",
+                  boxShadow: "0 12px 24px rgba(247,143,38,0.28)",
                 }}
               >
-                <Group justify="space-between" wrap="nowrap">
-                  <Stack gap={0}>
-                    <Text fw={800} c={titleColor}>
-                      O'zbekcha
-                    </Text>
-                    <Text size="xs" c={textColor}>
-                      UZ
-                    </Text>
-                  </Stack>
-                  {locale === "uz" ? <IconCheck size={18} color="#f78f26" /> : null}
-                </Group>
-              </Paper>
+                <IconLanguage size={22} />
+              </ActionIcon>
 
-              <Paper
-                component="button"
-                type="button"
-                radius="xl"
-                p="sm"
-                onClick={() => onLocaleChange("ru")}
-                style={{
-                  cursor: "pointer",
-                  background:
-                    locale === "ru" ? (isDark ? "#252a33" : "#ffffff") : "transparent",
-                  border:
-                    locale === "ru"
-                      ? `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(17,24,39,0.08)"}`
-                      : "1px solid transparent",
-                  boxShadow:
-                    locale === "ru" && !isDark
-                      ? "0 8px 20px rgba(15, 23, 42, 0.06)"
-                      : "none",
-                }}
-              >
-                <Group justify="space-between" wrap="nowrap">
-                  <Stack gap={0}>
-                    <Text fw={800} c={titleColor}>
-                      Русский
-                    </Text>
-                    <Text size="xs" c={textColor}>
-                      RU
-                    </Text>
-                  </Stack>
-                  {locale === "ru" ? <IconCheck size={18} color="#f78f26" /> : null}
-                </Group>
-              </Paper>
+              <Stack gap={2}>
+                <Text fw={900} fz="1.15rem" c={titleColor} lh={1.1}>
+                  {t("settings.language")}
+                </Text>
+                <Text size="sm" c={textColor} maw={240}>
+                  {t("settings.chooseLanguage")}
+                </Text>
+              </Stack>
             </Group>
+
+            <Stack gap="sm">
+              {languageOptions.map((option) => {
+                const active = locale === option.value;
+
+                return (
+                  <Paper
+                    key={option.value}
+                    component="button"
+                    type="button"
+                    radius={22}
+                    p="md"
+                    onClick={() => onLocaleChange(option.value)}
+                    style={{
+                      width: "100%",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      background: active
+                        ? isDark
+                          ? "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)"
+                          : "linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,247,240,1) 100%)"
+                        : mutedBg,
+                      border: active ? `1px solid ${option.accent}` : subtleBorder,
+                      boxShadow: active
+                        ? isDark
+                          ? `0 14px 26px ${option.accent}22`
+                          : `0 16px 30px ${option.accent}22`
+                        : "none",
+                      transition: "all 160ms ease",
+                    }}
+                  >
+                    <Group justify="space-between" align="center" wrap="nowrap">
+                      <Group gap="sm" wrap="nowrap">
+                        <Box
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: active ? `${option.accent}18` : "transparent",
+                            border: active
+                              ? `1px solid ${option.accent}55`
+                              : subtleBorder,
+                            color: active ? option.accent : textColor,
+                            fontWeight: 900,
+                            fontSize: "0.82rem",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {option.value.toUpperCase()}
+                        </Box>
+
+                        <Stack gap={1}>
+                          <Text fw={800} fz="1rem" c={titleColor}>
+                            {option.label}
+                          </Text>
+                          <Text size="xs" c={textColor}>
+                            {option.caption}
+                          </Text>
+                        </Stack>
+                      </Group>
+
+                      <Box
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: active ? option.accent : "transparent",
+                          border: active
+                            ? "none"
+                            : isDark
+                              ? "1px solid rgba(255,255,255,0.12)"
+                              : "1px solid rgba(15,23,42,0.12)",
+                          color: active ? "#ffffff" : "transparent",
+                        }}
+                      >
+                        <IconCheck size={16} />
+                      </Box>
+                    </Group>
+                  </Paper>
+                );
+              })}
+            </Stack>
           </Stack>
         </Paper>
 
         <Paper
-          radius={20}
-          p="md"
+          radius={24}
+          p="lg"
           style={{
-            background: mutedBg,
-            border: isDark
-              ? "1px solid rgba(255,255,255,0.05)"
-              : "1px solid rgba(17,24,39,0.06)",
+            background: surfaceBg,
+            border: cardBorder,
+            boxShadow: isDark
+              ? "0 14px 32px rgba(0,0,0,0.22)"
+              : "0 16px 32px rgba(15,23,42,0.06)",
           }}
         >
           <Group justify="space-between" align="center" wrap="nowrap">
             <Group gap="sm" wrap="nowrap">
-              <ActionIcon
-                size={38}
-                radius="xl"
-                variant="light"
-                color={isDark ? "yellow" : "dark"}
+              <Box
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: isDark
+                    ? "rgba(255,214,10,0.12)"
+                    : "rgba(15,23,42,0.05)",
+                  color: isDark ? "#ffd54a" : "#151515",
+                }}
               >
-                <IconMoonStars size={18} />
-              </ActionIcon>
-              <Stack gap={0}>
+                <IconMoonStars size={21} />
+              </Box>
+
+              <Stack gap={1}>
                 <Text fw={800} c={titleColor}>
                   {t("settings.darkMode")}
                 </Text>
-                <Text size="xs" c={textColor}>
+                <Text size="sm" c={textColor} maw={220}>
                   {t("settings.switchAppearance")}
                 </Text>
               </Stack>
@@ -188,7 +286,14 @@ export function SettingsDrawer({
               checked={isDark}
               onChange={(event) => onToggleDarkMode(event.currentTarget.checked)}
               color="orange"
-              size="md"
+              size="lg"
+              thumbIcon={
+                isDark ? (
+                  <IconMoonStars size={12} stroke={2.5} />
+                ) : (
+                  <IconCheck size={12} stroke={2.5} />
+                )
+              }
             />
           </Group>
         </Paper>

@@ -12,6 +12,7 @@ interface CartState {
   addItem: (product: Product, count: number) => void;
   incrementItem: (productId: string) => void;
   decrementItem: (productId: string) => void;
+  clearCart: () => void;
 }
 
 function getTotalCount(items: Record<string, CartItem>) {
@@ -80,5 +81,10 @@ export const useCartStore = create<CartState>((set) => ({
         items: nextItems,
         totalCount: getTotalCount(nextItems),
       };
+    }),
+  clearCart: () =>
+    set({
+      items: {},
+      totalCount: 0,
     }),
 }));
