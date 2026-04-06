@@ -12,6 +12,7 @@ import {
   IconCheck,
   IconLanguage,
   IconMoonStars,
+  IconUserCircle,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "../home-screen-types";
@@ -27,6 +28,8 @@ interface SettingsDrawerProps {
   titleColor: string;
   textColor: string;
   mutedBg: string;
+  userName?: string;
+  userSubtitle?: string;
 }
 
 const languageOptions: Array<{
@@ -60,6 +63,8 @@ export function SettingsDrawer({
   titleColor,
   textColor,
   mutedBg,
+  userName,
+  userSubtitle,
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
 
@@ -101,6 +106,50 @@ export function SettingsDrawer({
       }}
     >
       <Stack gap="lg">
+        {userName ? (
+          <Paper
+            radius={24}
+            p="lg"
+            style={{
+              background: surfaceBg,
+              border: cardBorder,
+              boxShadow: isDark
+                ? "0 14px 32px rgba(0,0,0,0.22)"
+                : "0 16px 32px rgba(15,23,42,0.06)",
+            }}
+          >
+            <Group gap="sm" wrap="nowrap">
+              <Box
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: isDark
+                    ? "rgba(247,143,38,0.12)"
+                    : "rgba(247,143,38,0.08)",
+                  color: "#f78f26",
+                }}
+              >
+                <IconUserCircle size={24} />
+              </Box>
+
+              <Stack gap={1}>
+                <Text fw={900} c={titleColor}>
+                  {userName}
+                </Text>
+                {userSubtitle ? (
+                  <Text size="sm" c={textColor}>
+                    {userSubtitle}
+                  </Text>
+                ) : null}
+              </Stack>
+            </Group>
+          </Paper>
+        ) : null}
+
         <Paper
           radius={28}
           p="lg"

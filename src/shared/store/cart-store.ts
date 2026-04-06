@@ -93,7 +93,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "food-web-app-cart",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         items: state.items,
         totalCount: state.totalCount,

@@ -217,6 +217,10 @@ export function CheckoutPage() {
         titleColor={titleColor}
         textColor={textColor}
         mutedBg={mutedBg}
+        userName={telegramUser?.FullName}
+        userSubtitle={
+          telegramUser?.Username ? `@${telegramUser.Username}` : undefined
+        }
       />
 
       <Drawer

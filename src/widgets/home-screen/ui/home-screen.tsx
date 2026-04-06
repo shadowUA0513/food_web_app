@@ -27,6 +27,7 @@ export function HomeScreen() {
 
   const companyId = getCompanyId();
   const telegramId = getTelegramId();
+  const { data: telegramUser } = useTelegramUser(telegramId, location.pathname === "/");
   const { data: settings } = useCompanySettings(companyId);
   const {
     data: categories = [],
@@ -61,7 +62,6 @@ export function HomeScreen() {
   const titleColor = isDark ? "#f3f4f6" : "#151515";
   const textColor = isDark ? "#b4bcc8" : "#5f6670";
   const mutedBg = isDark ? "#20242c" : "#f8f9fb";
-  useTelegramUser(telegramId, location.pathname === "/");
 
   function getLocalizedValue(nameUz: string, nameRu: string) {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
@@ -121,6 +121,10 @@ export function HomeScreen() {
         titleColor={titleColor}
         textColor={textColor}
         mutedBg={mutedBg}
+        userName={telegramUser?.FullName}
+        userSubtitle={
+          telegramUser?.Username ? `@${telegramUser.Username}` : undefined
+        }
       />
 
       <CartDrawer
