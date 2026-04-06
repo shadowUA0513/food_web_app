@@ -3,13 +3,13 @@
   Button,
   Drawer,
   Group,
-  Image,
   Paper,
   Stack,
   Text,
 } from "@mantine/core";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { ProductImage } from "../../../../shared/lib/product-image";
 import type { CartItem } from "../../../../shared/store/cart-store";
 interface CartDrawerProps {
   opened: boolean;
@@ -97,14 +97,13 @@ export function CartDrawer({
                   }}
                 >
                   <Group wrap="nowrap" align="center">
-                    <Image
+                    <ProductImage
                       src={product.image_url}
                       alt={getLocalizedValue(product.name_uz, product.name_ru)}
                       w={56}
                       h={56}
                       radius={12}
                       fit="cover"
-                      fallbackSrc="https://placehold.co/112x112/ffffff/222222?text=Food"
                     />
                     <Stack gap={2} style={{ flex: 1 }}>
                       <Text fw={700} c={titleColor} lineClamp={1}>

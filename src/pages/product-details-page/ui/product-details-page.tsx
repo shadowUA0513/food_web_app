@@ -3,7 +3,6 @@
   AppShell,
   Box,
   Group,
-  Image,
   Loader,
   Paper,
   Stack,
@@ -11,12 +10,14 @@
   Title,
   useComputedColorScheme,
 } from "@mantine/core";
-import { IconArrowLeft, IconMinus, IconPlus } from "@tabler/icons-react";
+import { IconArrowLeft, IconCheck, IconMinus, IconPlus } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCompanyMenu } from "../../../service/menu";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
+import { showAppNotification } from "../../../shared/lib/notifications";
+import { ProductImage } from "../../../shared/lib/product-image";
 import { useCartStore } from "../../../shared/store/cart-store";
 import { formatPrice, getCompanyId } from "../../../widgets/home-screen/ui/home-utils";
 
@@ -93,6 +94,13 @@ export function ProductDetailsPage() {
     }
 
     addItem(activeProduct, count);
+    showAppNotification({
+      title: t("cart.addedTitle"),
+      message: t("cart.addedMessage", {
+        product: getLocalizedValue(activeProduct.name_uz, activeProduct.name_ru),
+      }),
+      icon: <IconCheck size={16} />,
+    });
     goBack();
   }
 
@@ -159,7 +167,7 @@ export function ProductDetailsPage() {
                       : "0 12px 28px rgba(15, 23, 42, 0.06)",
                   }}
                 >
-                  <Image
+                  <ProductImage
                     src={activeProduct.image_url}
                     alt={getLocalizedValue(
                       activeProduct.name_uz,
@@ -167,7 +175,6 @@ export function ProductDetailsPage() {
                     )}
                     h={260}
                     fit="contain"
-                    fallbackSrc="https://placehold.co/720x520/ffffff/222222?text=Food"
                   />
                 </Paper>
 

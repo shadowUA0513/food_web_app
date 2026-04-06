@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCompanyMenu } from "../../../service/menu";
 import { useCompanySettings } from "../../../service/settings";
+import { useTelegramUser } from "../../../service/telegram-user";
 import { showAppNotification } from "../../../shared/lib/notifications";
 import { useCartStore } from "../../../shared/store/cart-store";
 import type { Product } from "../../../types/menu";
@@ -13,7 +14,7 @@ import { CartDrawer } from "./components/cart-drawer";
 import { FloatingCartButton } from "./components/floating-cart-button";
 import { MenuContent } from "./components/menu-content";
 import { SettingsDrawer } from "./components/settings-drawer";
-import { formatPrice, getCompanyId } from "./home-utils";
+import { formatPrice, getCompanyId, getTelegramId } from "./home-utils";
 import type { Locale } from "./home-screen-types";
 
 export function HomeScreen() {
@@ -25,6 +26,7 @@ export function HomeScreen() {
   const location = useLocation();
 
   const companyId = getCompanyId();
+  const telegramId = getTelegramId();
   const { data: settings } = useCompanySettings(companyId);
   const {
     data: categories = [],
@@ -59,6 +61,7 @@ export function HomeScreen() {
   const titleColor = isDark ? "#f3f4f6" : "#151515";
   const textColor = isDark ? "#b4bcc8" : "#5f6670";
   const mutedBg = isDark ? "#20242c" : "#f8f9fb";
+  useTelegramUser(telegramId, location.pathname === "/");
 
   function getLocalizedValue(nameUz: string, nameRu: string) {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;

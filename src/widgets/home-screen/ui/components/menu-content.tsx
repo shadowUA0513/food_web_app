@@ -15,6 +15,7 @@
 import { IconShoppingBagPlus, IconUserCircle } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../../shared/config/telegram";
+import { ProductImage } from "../../../../shared/lib/product-image";
 import type { MenuCategoryWithProducts, Product } from "../../../../types/menu";
 import type { CompanySettings } from "../../../../types/settings";
 import type { Locale } from "../home-screen-types";
@@ -211,12 +212,12 @@ export function MenuContent({
                       background: mutedBg,
                     }}
                   >
-                    <Image
+                    <ProductImage
                       src={product.image_url}
                       alt={getLocalizedValue(product.name_uz, product.name_ru)}
                       h={172}
                       fit="contain"
-                      fallbackSrc="https://placehold.co/520x360/ffffff/222222?text=Food"
+                      background="linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 100%), linear-gradient(135deg, #ffb347 0%, #ff8c42 48%, #d95d39 100%)"
                     />
                   </Box>
 
