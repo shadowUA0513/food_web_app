@@ -153,7 +153,7 @@ export function CheckoutPage() {
       return;
     }
 
-    if (!telegramUser?.TgID) {
+    if (!telegramUser?.ID) {
       showAppNotification({
         title: t("checkout.missingUser"),
         color: "red",
@@ -171,7 +171,7 @@ export function CheckoutPage() {
       company_id: companyId,
       partner_id: partnerId,
       delivery_address: address.trim(),
-      user_id: telegramUser.TgID,
+      user_id: telegramUser.ID,
       comment: noteParts.join(" | "),
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,
