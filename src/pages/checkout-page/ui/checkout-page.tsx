@@ -8,6 +8,7 @@ import {
   Group,
   Loader,
   Paper,
+  SegmentedControl,
   Stack,
   Text,
   TextInput,
@@ -42,12 +43,14 @@ import {
 } from "../../../widgets/home-screen/ui/home-utils";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
+import { PartnerMapPicker } from "./partner-map-picker";
 
 type OrderType = "partners" | "myself";
 
 export function CheckoutPage() {
   const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
   const [partnersOpened, { open: openPartners, close: closePartners }] = useDisclosure(false);
+  const [partnerView, setPartnerView] = useState<"map" | "list">("map");
   const { t, i18n } = useTranslation();
   const { setColorScheme } = useMantineColorScheme();
   const navigate = useNavigate();
@@ -226,7 +229,8 @@ export function CheckoutPage() {
       <Drawer
         opened={partnersOpened}
         onClose={closePartners}
-        position="right"
+        position="bottom"
+        size="100%"
         title={t("checkout.partnerDrawerTitle")}
         padding="lg"
         styles={{
@@ -240,6 +244,18 @@ export function CheckoutPage() {
           <Text size="sm" c={textColor}>
             {t("checkout.partnerDrawerDescription")}
           </Text>
+
+          <SegmentedControl
+            fullWidth
+            radius="xl"
+            color="orange"
+            value={partnerView}
+            onChange={(value) => setPartnerView(value as "map" | "list")}
+            data={[
+              { label: t("checkout.partnerMapView"), value: "map" },
+              { label: t("checkout.partnerListView"), value: "list" },
+            ]}
+          />
 
           {isPartnersLoading ? (
             <Group justify="center" py="md">
@@ -282,7 +298,23 @@ export function CheckoutPage() {
             </Paper>
           ) : null}
 
-          {!isPartnersLoading && !isPartnersError
+          {!isPartnersLoading && !isPartnersError && partnerView === "map" ? (
+            <PartnerMapPicker
+              partners={partners}
+              selectedPartnerId={selectedPartnerId}
+              onSelectPartner={(partnerId) => {
+                setSelectedPartnerId(partnerId);
+                closePartners();
+              }}
+              titleColor={titleColor}
+              textColor={textColor}
+              surfaceBg={surfaceBg}
+              mutedBg={mutedBg}
+              isDark={isDark}
+            />
+          ) : null}
+
+          {!isPartnersLoading && !isPartnersError && partnerView === "list"
             ? partners.map((partner) => {
                 const active = partner.id === selectedPartnerId;
 
@@ -421,6 +453,7 @@ export function CheckoutPage() {
                         p="md"
                         onClick={() => {
                           setOrderType("partners");
+                          setPartnerView("map");
                           openPartners();
                         }}
                         style={{
