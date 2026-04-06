@@ -29,15 +29,16 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCreateCompanyOrder } from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
+import { useTelegramUser } from "../../../service/telegram-user";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import { showAppNotification } from "../../../shared/lib/notifications";
-import { telegramService } from "../../../shared/services/telegram.service";
 import { useCartStore } from "../../../shared/store/cart-store";
 import { SettingsDrawer } from "../../../widgets/home-screen/ui/components/settings-drawer";
 import {
   formatPrice,
   getCompanyId,
   getPartnerId,
+  getTelegramId,
 } from "../../../widgets/home-screen/ui/home-utils";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
@@ -60,11 +61,13 @@ export function CheckoutPage() {
   const [comment, setComment] = useState("");
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
+  const telegramId = getTelegramId();
   const [orderType, setOrderType] = useState<OrderType>(
     initialPartnerId ? "partners" : "myself",
   );
   const [selectedPartnerId, setSelectedPartnerId] = useState(initialPartnerId ?? "");
   const createOrderMutation = useCreateCompanyOrder();
+  const { data: telegramUser } = useTelegramUser(telegramId);
   const {
     data: partners = [],
     isLoading: isPartnersLoading,
@@ -150,8 +153,7 @@ export function CheckoutPage() {
       return;
     }
 
-    const telegramUser = telegramService.getUser();
-    if (!telegramUser?.id) {
+    if (!telegramUser?.ID) {
       showAppNotification({
         title: t("checkout.missingUser"),
         color: "red",
@@ -169,7 +171,7 @@ export function CheckoutPage() {
       company_id: companyId,
       partner_id: partnerId,
       delivery_address: address.trim(),
-      user_id: telegramUser.id,
+      user_id: telegramUser.ID,
       comment: noteParts.join(" | "),
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,
