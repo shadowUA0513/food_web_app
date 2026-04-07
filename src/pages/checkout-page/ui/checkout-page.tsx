@@ -43,6 +43,7 @@ import {
 import type { CreateOrderPayload } from "../../../types/order";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
+import { DeliveryAddressPicker } from "./delivery-address-picker";
 import { PartnerMapPicker } from "./partner-map-picker";
 
 type OrderType = "partners" | "myself";
@@ -59,6 +60,7 @@ export function CheckoutPage() {
   const cartItems = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
   const [comment, setComment] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
@@ -139,6 +141,15 @@ export function CheckoutPage() {
       return;
     }
 
+    if (orderType === "myself" && !deliveryAddress.trim()) {
+      showAppNotification({
+        title: t("checkout.validationAddress"),
+        color: "red",
+        icon: <IconInfoCircle size={18} />,
+      });
+      return;
+    }
+
     if (!telegramUser?.TgID) {
       showAppNotification({
         title: t("checkout.missingUser"),
@@ -150,7 +161,7 @@ export function CheckoutPage() {
 
     const orderPayload: CreateOrderPayload = {
       company_id: companyId,
-      delivery_address: "",
+      delivery_address: orderType === "myself" ? deliveryAddress.trim() : "",
       user_id: telegramUser.TgID,
       payment_type: "cash",
       comment: comment.trim() || undefined,
@@ -520,6 +531,18 @@ export function CheckoutPage() {
                           </Group>
                         </Stack>
                       </Paper>
+                    ) : null}
+
+                    {orderType === "myself" ? (
+                      <DeliveryAddressPicker
+                        value={deliveryAddress}
+                        onChange={setDeliveryAddress}
+                        titleColor={titleColor}
+                        textColor={textColor}
+                        surfaceBg={surfaceBg}
+                        mutedBg={mutedBg}
+                        isDark={isDark}
+                      />
                     ) : null}
                   </Stack>
                 </Paper>
