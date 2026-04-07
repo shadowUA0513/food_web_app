@@ -147,6 +147,7 @@ export function CheckoutPage() {
       company_id: companyId,
       delivery_address: "",
       user_id: telegramUser.TgID,
+      payment_type: "cash",
       comment: comment.trim() || undefined,
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,

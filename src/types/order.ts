@@ -9,6 +9,7 @@ export interface CreateOrderPayload {
   partner_id?: string;
   delivery_address: string;
   user_id: number;
+  payment_type: string;
   comment?: string;
   items: CreateOrderItemPayload[];
 }
@@ -19,6 +20,7 @@ export interface Order {
   partner_id?: string | null;
   delivery_address: string;
   user_id: number;
+  payment_type?: string | null;
   comment?: string | null;
   status?: string;
   created_at?: string;
