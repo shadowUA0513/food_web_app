@@ -1,4 +1,4 @@
-﻿import {
+import {
   ActionIcon,
   Button,
   Drawer,
@@ -9,8 +9,10 @@
 } from "@mantine/core";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
 import { ProductImage } from "../../../../shared/lib/product-image";
 import type { CartItem } from "../../../../shared/store/cart-store";
+
 interface CartDrawerProps {
   opened: boolean;
   onClose: () => void;
@@ -47,6 +49,7 @@ export function CartDrawer({
   onCheckout,
 }: CartDrawerProps) {
   const { t } = useTranslation();
+  const { brandColor } = useBrandTheme();
 
   return (
     <Drawer
@@ -113,7 +116,7 @@ export function CartDrawer({
                         <ActionIcon
                           radius="xl"
                           variant="light"
-                          color="orange"
+                          color={brandColor}
                           size={26}
                           onClick={() => decrementItem(product.id)}
                         >
@@ -125,7 +128,7 @@ export function CartDrawer({
                         <ActionIcon
                           radius="xl"
                           variant="filled"
-                          color="orange"
+                          color={brandColor}
                           size={26}
                           onClick={() => incrementItem(product.id)}
                         >
@@ -179,7 +182,7 @@ export function CartDrawer({
               <Button
                 size="md"
                 radius="xl"
-                color="orange"
+                color={brandColor}
                 onClick={onCheckout}
                 styles={{
                   root: {

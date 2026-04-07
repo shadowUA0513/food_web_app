@@ -14,6 +14,7 @@ import { IconArrowLeft, IconCheck, IconMinus, IconPlus } from "@tabler/icons-rea
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { useCompanyMenu } from "../../../service/menu";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import { showAppNotification } from "../../../shared/lib/notifications";
@@ -23,6 +24,7 @@ import { formatPrice, getCompanyId } from "../../../widgets/home-screen/ui/home-
 
 export function ProductDetailsPage() {
   const { t, i18n } = useTranslation();
+  const { brandColor, brandScale } = useBrandTheme();
   const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
   const [count, setCount] = useState(1);
   const computedColorScheme = useComputedColorScheme("light");
@@ -138,7 +140,7 @@ export function ProductDetailsPage() {
             {isLoading ? (
               <Paper radius={20} p="lg" style={{ background: surfaceBg }}>
                 <Group justify="center">
-                  <Loader color="orange" />
+                  <Loader color={brandColor} />
                 </Group>
               </Paper>
             ) : null}
@@ -205,7 +207,7 @@ export function ProductDetailsPage() {
                         <ActionIcon
                           radius="xl"
                           variant="light"
-                          color="orange"
+                          color={brandColor}
                           onClick={decreaseCount}
                           disabled={count <= 1}
                         >
@@ -223,7 +225,7 @@ export function ProductDetailsPage() {
                         <ActionIcon
                           radius="xl"
                           variant="filled"
-                          color="orange"
+                          color={brandColor}
                           onClick={increaseCount}
                         >
                           <IconPlus size={16} />
@@ -297,7 +299,7 @@ export function ProductDetailsPage() {
                           color: "#ffffff",
                           fontWeight: 800,
                           background: activeProduct.is_available
-                            ? "linear-gradient(135deg, #f78f26 0%, #ef6c00 100%)"
+                            ? `linear-gradient(135deg, ${brandScale[3]} 0%, ${brandColor} 100%)`
                             : "#a7abb3",
                         }}
                       >

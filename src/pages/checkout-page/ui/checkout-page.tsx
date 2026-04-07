@@ -27,6 +27,8 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useBrandTheme } from "../../../app/providers/brand-theme-context";
+import { hexToRgba } from "../../../app/theme/theme";
 import { useCreateCompanyOrder } from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
 import { useTelegramUser } from "../../../service/telegram-user";
@@ -53,6 +55,7 @@ export function CheckoutPage() {
   const [partnersOpened, { open: openPartners, close: closePartners }] = useDisclosure(false);
   const [partnerView, setPartnerView] = useState<"map" | "list">("map");
   const { t, i18n } = useTranslation();
+  const { brandColor, brandScale } = useBrandTheme();
   const { setColorScheme } = useMantineColorScheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -244,7 +247,7 @@ export function CheckoutPage() {
           <SegmentedControl
             fullWidth
             radius="xl"
-            color="orange"
+            color={brandColor}
             value={partnerView}
             onChange={(value) => setPartnerView(value as "map" | "list")}
             data={[
@@ -255,7 +258,7 @@ export function CheckoutPage() {
 
           {isPartnersLoading ? (
             <Group justify="center" py="md">
-              <Loader color="orange" />
+              <Loader color={brandColor} />
             </Group>
           ) : null}
 
@@ -330,7 +333,7 @@ export function CheckoutPage() {
                       textAlign: "left",
                       cursor: "pointer",
                       background: active ? mutedBg : surfaceBg,
-                      border: active ? "1px solid #f78f26" : cardBorder,
+                      border: active ? `1px solid ${brandColor}` : cardBorder,
                     }}
                   >
                     <Stack gap={4}>
@@ -400,7 +403,7 @@ export function CheckoutPage() {
                   <Text size="sm" c={textColor}>
                     {t("checkout.emptyDescription")}
                   </Text>
-                  <Button radius="xl" color="orange" onClick={goBack}>
+                  <Button radius="xl" color={brandColor} onClick={goBack}>
                     {t("checkout.backToMenu")}
                   </Button>
                 </Stack>
@@ -416,7 +419,7 @@ export function CheckoutPage() {
                   }}
                 >
                   <Stack gap={4}>
-                    <Text size="sm" fw={700} c="orange.6">
+                    <Text size="sm" fw={700} c={brandColor}>
                       {t("checkout.subtitle")}
                     </Text>
                     <Title order={2} c={titleColor}>
@@ -458,7 +461,7 @@ export function CheckoutPage() {
                           background: orderType === "partners" ? mutedBg : surfaceBg,
                           border:
                             orderType === "partners"
-                              ? "1px solid #f78f26"
+                              ? `1px solid ${brandColor}`
                               : cardBorder,
                         }}
                       >
@@ -484,7 +487,7 @@ export function CheckoutPage() {
                           background: orderType === "myself" ? mutedBg : surfaceBg,
                           border:
                             orderType === "myself"
-                              ? "1px solid #f78f26"
+                              ? `1px solid ${brandColor}`
                               : cardBorder,
                         }}
                       >
@@ -522,7 +525,7 @@ export function CheckoutPage() {
                             </Stack>
                             <Button
                               variant="light"
-                              color="orange"
+                              color={brandColor}
                               radius="xl"
                               onClick={openPartners}
                             >
@@ -605,7 +608,7 @@ export function CheckoutPage() {
                       justify="space-between"
                       p="md"
                       style={{
-                        background: mutedBg,
+                        background: hexToRgba(brandScale[1], 0.5),
                         borderRadius: 16,
                       }}
                     >
@@ -620,7 +623,7 @@ export function CheckoutPage() {
                     <Button
                       size="md"
                       radius="xl"
-                      color="orange"
+                      color={brandColor}
                       onClick={handleSubmitOrder}
                       loading={createOrderMutation.isPending}
                       disabled={createOrderMutation.isPending}

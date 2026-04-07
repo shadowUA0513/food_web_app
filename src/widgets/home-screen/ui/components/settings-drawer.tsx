@@ -15,6 +15,8 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
+import { hexToRgba } from "../../../../app/theme/theme";
 import type { Locale } from "../home-screen-types";
 
 interface SettingsDrawerProps {
@@ -36,19 +38,16 @@ const languageOptions: Array<{
   value: Locale;
   label: string;
   caption: string;
-  accent: string;
 }> = [
   {
     value: "uz",
     label: "O'zbekcha",
     caption: "Latin script",
-    accent: "#f78f26",
   },
   {
     value: "ru",
     label: "Russian",
     caption: "Cyrillic script",
-    accent: "#4f8cff",
   },
 ];
 
@@ -67,6 +66,7 @@ export function SettingsDrawer({
   userSubtitle,
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
+  const { brandColor, brandScale } = useBrandTheme();
 
   const cardBorder = isDark
     ? "1px solid rgba(255,255,255,0.07)"
@@ -78,8 +78,8 @@ export function SettingsDrawer({
     ? "linear-gradient(180deg, rgba(29,33,42,0.98) 0%, rgba(21,24,31,0.98) 100%)"
     : "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,248,252,0.98) 100%)";
   const heroBg = isDark
-    ? "radial-gradient(circle at top left, rgba(247,143,38,0.22), transparent 44%), linear-gradient(180deg, #1f232d 0%, #171a21 100%)"
-    : "radial-gradient(circle at top left, rgba(247,143,38,0.16), transparent 42%), linear-gradient(180deg, #fffaf4 0%, #ffffff 100%)";
+    ? `radial-gradient(circle at top left, ${hexToRgba(brandColor, 0.22)}, transparent 44%), linear-gradient(180deg, #1f232d 0%, #171a21 100%)`
+    : `radial-gradient(circle at top left, ${hexToRgba(brandColor, 0.16)}, transparent 42%), linear-gradient(180deg, ${brandScale[0]} 0%, #ffffff 100%)`;
 
   return (
     <Drawer
@@ -128,9 +128,9 @@ export function SettingsDrawer({
                   alignItems: "center",
                   justifyContent: "center",
                   background: isDark
-                    ? "rgba(247,143,38,0.12)"
-                    : "rgba(247,143,38,0.08)",
-                  color: "#f78f26",
+                    ? hexToRgba(brandColor, 0.12)
+                    : hexToRgba(brandColor, 0.08),
+                  color: brandColor,
                 }}
               >
                 <IconUserCircle size={24} />
@@ -173,7 +173,7 @@ export function SettingsDrawer({
               borderRadius: "50%",
               background: isDark
                 ? "rgba(255,255,255,0.04)"
-                : "rgba(247,143,38,0.09)",
+                : hexToRgba(brandColor, 0.09),
             }}
           />
 
@@ -183,9 +183,9 @@ export function SettingsDrawer({
                 size={48}
                 radius="xl"
                 variant="filled"
-                color="orange"
+                color={brandColor}
                 style={{
-                  boxShadow: "0 12px 24px rgba(247,143,38,0.28)",
+                  boxShadow: `0 12px 24px ${hexToRgba(brandColor, 0.28)}`,
                 }}
               >
                 <IconLanguage size={22} />
@@ -204,6 +204,7 @@ export function SettingsDrawer({
             <Stack gap="sm">
               {languageOptions.map((option) => {
                 const active = locale === option.value;
+                const activeAccent = brandColor;
 
                 return (
                   <Paper
@@ -220,13 +221,13 @@ export function SettingsDrawer({
                       background: active
                         ? isDark
                           ? "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)"
-                          : "linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,247,240,1) 100%)"
+                          : `linear-gradient(135deg, rgba(255,255,255,1) 0%, ${hexToRgba(brandColor, 0.08)} 100%)`
                         : mutedBg,
-                      border: active ? `1px solid ${option.accent}` : subtleBorder,
+                      border: active ? `1px solid ${activeAccent}` : subtleBorder,
                       boxShadow: active
                         ? isDark
-                          ? `0 14px 26px ${option.accent}22`
-                          : `0 16px 30px ${option.accent}22`
+                          ? `0 14px 26px ${hexToRgba(activeAccent, 0.14)}`
+                          : `0 16px 30px ${hexToRgba(activeAccent, 0.14)}`
                         : "none",
                       transition: "all 160ms ease",
                     }}
@@ -241,11 +242,11 @@ export function SettingsDrawer({
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            background: active ? `${option.accent}18` : "transparent",
+                            background: active ? hexToRgba(activeAccent, 0.1) : "transparent",
                             border: active
-                              ? `1px solid ${option.accent}55`
+                              ? `1px solid ${hexToRgba(activeAccent, 0.35)}`
                               : subtleBorder,
-                            color: active ? option.accent : textColor,
+                            color: active ? activeAccent : textColor,
                             fontWeight: 900,
                             fontSize: "0.82rem",
                             letterSpacing: "0.08em",
@@ -272,7 +273,7 @@ export function SettingsDrawer({
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          background: active ? option.accent : "transparent",
+                          background: active ? activeAccent : "transparent",
                           border: active
                             ? "none"
                             : isDark
@@ -334,7 +335,7 @@ export function SettingsDrawer({
             <Switch
               checked={isDark}
               onChange={(event) => onToggleDarkMode(event.currentTarget.checked)}
-              color="orange"
+              color={brandColor}
               size="lg"
               thumbIcon={
                 isDark ? (

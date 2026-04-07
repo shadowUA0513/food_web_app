@@ -1,5 +1,6 @@
-﻿import { ActionIcon, Box, Text } from "@mantine/core";
+import { ActionIcon, Box, Text } from "@mantine/core";
 import { IconShoppingCart } from "@tabler/icons-react";
+import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
 
 interface FloatingCartButtonProps {
   totalCount: number;
@@ -12,12 +13,14 @@ export function FloatingCartButton({
   isDark,
   onClick,
 }: FloatingCartButtonProps) {
+  const { brandColor } = useBrandTheme();
+
   return (
     <ActionIcon
       size={56}
       radius="xl"
       variant="filled"
-      color="orange"
+      color={brandColor}
       onClick={onClick}
       style={{
         position: "fixed",

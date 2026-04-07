@@ -1,6 +1,7 @@
 import { Box, Paper, Stack, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 
 interface DeliveryAddressPickerProps {
   value: string;
@@ -78,6 +79,7 @@ export function DeliveryAddressPicker({
   isDark,
 }: DeliveryAddressPickerProps) {
   const { t, i18n } = useTranslation();
+  const { brandColor } = useBrandTheme();
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<YandexMapInstance | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -125,7 +127,8 @@ export function DeliveryAddressPicker({
                 balloonContent: label,
               },
               {
-                preset: "islands#orangeDotIcon",
+                preset: "islands#dotIcon",
+                iconColor: brandColor,
               },
             );
 
@@ -180,7 +183,7 @@ export function DeliveryAddressPicker({
       mapInstanceRef.current?.destroy();
       mapInstanceRef.current = null;
     };
-  }, [onChange, t]);
+  }, [brandColor, onChange, t]);
 
   return (
     <Stack gap="md">

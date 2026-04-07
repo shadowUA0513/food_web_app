@@ -9,6 +9,7 @@ import {
 } from "@mantine/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import type { Partner } from "../../../types/partner";
 
 interface PartnerMapPickerProps {
@@ -147,6 +148,7 @@ export function PartnerMapPicker({
   isDark,
 }: PartnerMapPickerProps) {
   const { t, i18n } = useTranslation();
+  const { brandColor } = useBrandTheme();
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<YandexMapInstance | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
@@ -208,9 +210,8 @@ export function PartnerMapPicker({
                 hintContent: getPartnerLabel(partner, locale),
               },
               {
-                preset: isActive
-                  ? "islands#orangeDotIcon"
-                  : "islands#blueDotIcon",
+                preset: isActive ? "islands#dotIcon" : "islands#blueDotIcon",
+                iconColor: isActive ? brandColor : undefined,
               },
             );
 
@@ -246,7 +247,7 @@ export function PartnerMapPicker({
       mapInstanceRef.current?.destroy();
       mapInstanceRef.current = null;
     };
-  }, [onSelectPartner, partnersWithCoordinates, selectedPartnerId, t]);
+  }, [brandColor, onSelectPartner, partnersWithCoordinates, selectedPartnerId, t]);
 
   return (
     <Stack gap="md">
@@ -337,7 +338,7 @@ export function PartnerMapPicker({
                   minWidth: 220,
                   background: active ? mutedBg : surfaceBg,
                   border: active
-                    ? "1px solid #f78f26"
+                    ? `1px solid ${brandColor}`
                     : isDark
                       ? "1px solid rgba(255,255,255,0.08)"
                       : "1px solid rgba(17,24,39,0.08)",
@@ -355,7 +356,7 @@ export function PartnerMapPicker({
 
                   <Button
                     radius="xl"
-                    color={active ? "orange" : "gray"}
+                    color={active ? brandColor : "gray"}
                     variant={active ? "filled" : "light"}
                     onClick={() => onSelectPartner(partner.id)}
                   >

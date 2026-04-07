@@ -11,7 +11,7 @@ interface ShowAppNotificationParams {
 export function showAppNotification({
   title,
   message,
-  color = "orange",
+  color = "primary",
   icon,
 }: ShowAppNotificationParams) {
   notifications.show({

@@ -14,6 +14,8 @@
 } from "@mantine/core";
 import { IconShoppingBagPlus, IconUserCircle } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
+import { hexToRgba } from "../../../../app/theme/theme";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../../shared/config/telegram";
 import { ProductImage } from "../../../../shared/lib/product-image";
 import type { MenuCategoryWithProducts, Product } from "../../../../types/menu";
@@ -59,6 +61,7 @@ export function MenuContent({
   formatPrice,
 }: MenuContentProps) {
   const { t } = useTranslation();
+  const { brandColor, brandScale } = useBrandTheme();
   const headerHeight = 104;
   const headerOffset = 14;
 
@@ -140,7 +143,7 @@ export function MenuContent({
 
         {isLoading ? (
           <Center py="xl">
-            <Loader color="orange" />
+            <Loader color={brandColor} />
           </Center>
         ) : null}
 
@@ -217,7 +220,7 @@ export function MenuContent({
                       alt={getLocalizedValue(product.name_uz, product.name_ru)}
                       h={172}
                       fit="contain"
-                      background="linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 100%), linear-gradient(135deg, #ffb347 0%, #ff8c42 48%, #d95d39 100%)"
+                      background={`linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 100%), linear-gradient(135deg, ${brandScale[2]} 0%, ${brandColor} 48%, ${brandScale[7]} 100%)`}
                     />
                   </Box>
 
@@ -259,7 +262,7 @@ export function MenuContent({
                         size={40}
                         radius="xl"
                         variant={product.is_available ? "filled" : "light"}
-                        color="orange"
+                        color={brandColor}
                         disabled={!product.is_available}
                         aria-label={t("product.addToCart")}
                         onClick={(event) => {
@@ -274,8 +277,8 @@ export function MenuContent({
                         style={{
                           boxShadow: product.is_available
                             ? isDark
-                              ? "0 10px 18px rgba(247,143,38,0.28)"
-                              : "0 10px 18px rgba(247,143,38,0.22)"
+                              ? `0 10px 18px ${hexToRgba(brandColor, 0.28)}`
+                              : `0 10px 18px ${hexToRgba(brandColor, 0.22)}`
                             : "none",
                           flexShrink: 0,
                         }}
