@@ -1,10 +1,14 @@
 export interface Partner {
   id: string;
   name?: string;
+  name_uz?: string;
+  name_ru?: string;
   full_name?: string;
   title?: string;
   phone?: string;
   phone_number?: string;
+  address_description?: string;
+  addressDescription?: string;
   latitude?: number | string;
   longitude?: number | string;
   lat?: number | string;

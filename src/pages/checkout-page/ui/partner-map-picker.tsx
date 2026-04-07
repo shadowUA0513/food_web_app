@@ -1,4 +1,12 @@
-import { Box, Button, Group, Paper, ScrollArea, Stack, Text } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Group,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Partner } from "../../../types/partner";
@@ -6,7 +14,11 @@ import type { Partner } from "../../../types/partner";
 declare global {
   interface Window {
     ymaps?: {
-      Map: new (element: HTMLElement, state: unknown, options?: unknown) => {
+      Map: new (
+        element: HTMLElement,
+        state: unknown,
+        options?: unknown,
+      ) => {
         destroy: () => void;
         geoObjects: {
           add: (geoObject: unknown) => void;
@@ -91,14 +103,32 @@ function getBounds(points: [number, number][]) {
   ];
 }
 
-function getPartnerLabel(partner: Partner) {
+function getPartnerLabel(partner: Partner, locale: "uz" | "ru") {
   return (
+    (locale === "uz" ? partner.name_uz : partner.name_ru) ??
     partner.name ??
     partner.full_name ??
     partner.title ??
     partner.phone ??
     partner.phone_number ??
-    partner.id
+    ""
+  );
+}
+
+function getPartnerAddress(partner: Partner) {
+  return partner.address_description ?? partner.addressDescription ?? "";
+}
+
+function getPartnerSubtitle(partner: Partner) {
+  return getPartnerAddress(partner) || partner.phone || partner.phone_number || "";
+}
+
+function getPartnerMapDescription(partner: Partner) {
+  return (
+    getPartnerAddress(partner) ||
+    partner.phone ||
+    partner.phone_number ||
+    ""
   );
 }
 
@@ -109,12 +139,18 @@ function loadYandexMapsScript() {
       return;
     }
 
-    const existingScript = document.getElementById(YANDEX_MAPS_SCRIPT_ID) as HTMLScriptElement | null;
+    const existingScript = document.getElementById(
+      YANDEX_MAPS_SCRIPT_ID,
+    ) as HTMLScriptElement | null;
     if (existingScript) {
       existingScript.addEventListener("load", () => resolve(), { once: true });
-      existingScript.addEventListener("error", () => reject(new Error("Failed to load map.")), {
-        once: true,
-      });
+      existingScript.addEventListener(
+        "error",
+        () => reject(new Error("Failed to load map.")),
+        {
+          once: true,
+        },
+      );
       return;
     }
 
@@ -139,7 +175,7 @@ export function PartnerMapPicker({
   mutedBg,
   isDark,
 }: PartnerMapPickerProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<{
     destroy: () => void;
@@ -150,6 +186,7 @@ export function PartnerMapPicker({
     setBounds?: (bounds: number[][], options?: unknown) => void;
   } | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
 
   const partnersWithCoordinates = useMemo<PartnerWithCoordinates[]>(
     () =>
@@ -183,7 +220,8 @@ export function PartnerMapPicker({
 
           mapInstanceRef.current?.destroy();
 
-          const initialCoordinates = partnersWithCoordinates[0]?.coordinates ?? [41.3111, 69.2797];
+          const initialCoordinates = partnersWithCoordinates[0]
+            ?.coordinates ?? [41.3111, 69.2797];
           const map = new window.ymaps.Map(
             mapRef.current,
             {
@@ -201,12 +239,14 @@ export function PartnerMapPicker({
             const placemark = new window.ymaps!.Placemark(
               coordinates,
               {
-                balloonContentHeader: getPartnerLabel(partner),
-                balloonContentBody: partner.phone ?? partner.phone_number ?? partner.id,
-                hintContent: getPartnerLabel(partner),
+                balloonContentHeader: getPartnerLabel(partner, locale),
+                balloonContentBody: getPartnerMapDescription(partner),
+                hintContent: getPartnerLabel(partner, locale),
               },
               {
-                preset: isActive ? "islands#orangeDotIcon" : "islands#blueDotIcon",
+                preset: isActive
+                  ? "islands#orangeDotIcon"
+                  : "islands#blueDotIcon",
               },
             );
 
@@ -217,7 +257,9 @@ export function PartnerMapPicker({
             map.geoObjects.add(placemark);
           });
 
-          const points = partnersWithCoordinates.map(({ coordinates }) => coordinates);
+          const points = partnersWithCoordinates.map(
+            ({ coordinates }) => coordinates,
+          );
           if (points.length > 1) {
             map.setBounds?.(getBounds(points), {
               checkZoomRange: true,
@@ -340,10 +382,10 @@ export function PartnerMapPicker({
                 <Stack gap="sm">
                   <Stack gap={2}>
                     <Text fw={800} c={titleColor}>
-                      {getPartnerLabel(partner)}
+                      {getPartnerLabel(partner, locale)}
                     </Text>
                     <Text size="xs" c={textColor}>
-                      {partner.phone ?? partner.phone_number ?? partner.id}
+                      {getPartnerSubtitle(partner)}
                     </Text>
                   </Stack>
 
@@ -353,7 +395,9 @@ export function PartnerMapPicker({
                     variant={active ? "filled" : "light"}
                     onClick={() => onSelectPartner(partner.id)}
                   >
-                    {active ? t("checkout.partnerSelectedAction") : t("checkout.choosePartner")}
+                    {active
+                      ? t("checkout.partnerSelectedAction")
+                      : t("checkout.choosePartner")}
                   </Button>
                 </Stack>
               </Paper>

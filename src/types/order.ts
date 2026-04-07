@@ -6,7 +6,7 @@ export interface CreateOrderItemPayload {
 
 export interface CreateOrderPayload {
   company_id: string;
-  partner_id: string;
+  partner_id?: string;
   delivery_address: string;
   user_id: number;
   comment?: string;
@@ -16,7 +16,7 @@ export interface CreateOrderPayload {
 export interface Order {
   id: string;
   company_id: string;
-  partner_id: string;
+  partner_id?: string | null;
   delivery_address: string;
   user_id: number;
   comment?: string | null;

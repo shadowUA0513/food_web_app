@@ -11,7 +11,6 @@ import {
   SegmentedControl,
   Stack,
   Text,
-  TextInput,
   Textarea,
   Title,
   useComputedColorScheme,
@@ -20,9 +19,6 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconArrowLeft,
-  IconMapPin,
-  IconPhone,
-  IconUser,
   IconUserCircle,
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
@@ -41,6 +37,7 @@ import {
   getPartnerId,
   getTelegramId,
 } from "../../../widgets/home-screen/ui/home-utils";
+import type { CreateOrderPayload } from "../../../types/order";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
 import { PartnerMapPicker } from "./partner-map-picker";
@@ -58,9 +55,6 @@ export function CheckoutPage() {
   const computedColorScheme = useComputedColorScheme("light");
   const cartItems = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
-  const [customerName, setCustomerName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
@@ -103,6 +97,26 @@ export function CheckoutPage() {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
   }
 
+  function getPartnerLabel(partner: Partner) {
+    return (
+      getLocalizedValue(partner.name_uz ?? "", partner.name_ru ?? "") ||
+      partner.name ||
+      partner.full_name ||
+      partner.title ||
+      ""
+    );
+  }
+
+  function getPartnerSubtitle(partner: Partner) {
+    return (
+      partner.address_description ||
+      partner.addressDescription ||
+      partner.phone ||
+      partner.phone_number ||
+      ""
+    );
+  }
+
   function goBack() {
     navigate({
       pathname: cartList.length > 0 ? "/cart" : "/",
@@ -110,45 +124,10 @@ export function CheckoutPage() {
     });
   }
 
-  function getPartnerLabel(partner: Partner) {
-    return (
-      partner.name ??
-      partner.full_name ??
-      partner.title ??
-      partner.phone ??
-      partner.phone_number ??
-      partner.id
-    );
-  }
-
   async function handleSubmitOrder() {
-    if (!customerName.trim()) {
-      showAppNotification({
-        title: t("checkout.validationName"),
-        color: "red",
-      });
-      return;
-    }
+    const partnerId = orderType === "partners" ? selectedPartnerId : undefined;
 
-    if (!phone.trim()) {
-      showAppNotification({
-        title: t("checkout.validationPhone"),
-        color: "red",
-      });
-      return;
-    }
-
-    if (!address.trim()) {
-      showAppNotification({
-        title: t("checkout.validationAddress"),
-        color: "red",
-      });
-      return;
-    }
-
-    const partnerId = orderType === "partners" ? selectedPartnerId : initialPartnerId ?? "";
-
-    if (!partnerId) {
+    if (orderType === "partners" && !partnerId) {
       showAppNotification({
         title: t("checkout.missingPartner"),
         color: "red",
@@ -164,24 +143,21 @@ export function CheckoutPage() {
       return;
     }
 
-    const noteParts = [
-      `${t("checkout.nameLabel")}: ${customerName.trim()}`,
-      `${t("checkout.phoneLabel")}: ${phone.trim()}`,
-      comment.trim() ? `${t("checkout.commentLabel")}: ${comment.trim()}` : "",
-    ].filter(Boolean);
-
-    const orderPayload = {
+    const orderPayload: CreateOrderPayload = {
       company_id: companyId,
-      partner_id: partnerId,
-      delivery_address: address.trim(),
+      delivery_address: "",
       user_id: telegramUser.TgID,
-      comment: noteParts.join(" | "),
+      comment: comment.trim() || undefined,
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,
         quantity: count,
         price: product.price,
       })),
     };
+
+    if (partnerId) {
+      orderPayload.partner_id = partnerId;
+    }
 
     try {
       await createOrderMutation.mutateAsync(orderPayload);
@@ -342,7 +318,7 @@ export function CheckoutPage() {
                         {getPartnerLabel(partner)}
                       </Text>
                       <Text size="xs" c={textColor}>
-                        {partner.phone ?? partner.phone_number ?? partner.id}
+                        {getPartnerSubtitle(partner)}
                       </Text>
                     </Stack>
                   </Paper>
@@ -551,30 +527,6 @@ export function CheckoutPage() {
                     <Title order={4} c={titleColor}>
                       {t("checkout.contactTitle")}
                     </Title>
-                    <TextInput
-                      label={t("checkout.nameLabel")}
-                      placeholder={t("checkout.namePlaceholder")}
-                      leftSection={<IconUser size={16} />}
-                      radius="md"
-                      value={customerName}
-                      onChange={(event) => setCustomerName(event.currentTarget.value)}
-                    />
-                    <TextInput
-                      label={t("checkout.phoneLabel")}
-                      placeholder={t("checkout.phonePlaceholder")}
-                      leftSection={<IconPhone size={16} />}
-                      radius="md"
-                      value={phone}
-                      onChange={(event) => setPhone(event.currentTarget.value)}
-                    />
-                    <TextInput
-                      label={t("checkout.addressLabel")}
-                      placeholder={t("checkout.addressPlaceholder")}
-                      leftSection={<IconMapPin size={16} />}
-                      radius="md"
-                      value={address}
-                      onChange={(event) => setAddress(event.currentTarget.value)}
-                    />
                     <Textarea
                       label={t("checkout.commentLabel")}
                       placeholder={t("checkout.commentPlaceholder")}
