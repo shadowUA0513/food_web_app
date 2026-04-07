@@ -2,33 +2,6 @@ import { Box, Paper, Stack, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-declare global {
-  interface Window {
-    ymaps?: {
-      Map: new (
-        element: HTMLElement,
-        state: unknown,
-        options?: unknown,
-      ) => {
-        destroy: () => void;
-        geoObjects: {
-          add: (geoObject: unknown) => void;
-          removeAll: () => void;
-        };
-        events: {
-          add: (eventName: string, handler: (event: unknown) => void) => void;
-        };
-      };
-      Placemark: new (
-        coords: number[],
-        properties?: Record<string, unknown>,
-        options?: Record<string, unknown>,
-      ) => unknown;
-      ready: (callback: () => void) => void;
-    };
-  }
-}
-
 interface DeliveryAddressPickerProps {
   value: string;
   onChange: (value: string) => void;
@@ -106,16 +79,7 @@ export function DeliveryAddressPicker({
 }: DeliveryAddressPickerProps) {
   const { t, i18n } = useTranslation();
   const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<{
-    destroy: () => void;
-    geoObjects: {
-      add: (geoObject: unknown) => void;
-      removeAll: () => void;
-    };
-    events: {
-      add: (eventName: string, handler: (event: unknown) => void) => void;
-    };
-  } | null>(null);
+  const mapInstanceRef = useRef<YandexMapInstance | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";

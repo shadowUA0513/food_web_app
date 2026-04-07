@@ -11,35 +11,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Partner } from "../../../types/partner";
 
-declare global {
-  interface Window {
-    ymaps?: {
-      Map: new (
-        element: HTMLElement,
-        state: unknown,
-        options?: unknown,
-      ) => {
-        destroy: () => void;
-        geoObjects: {
-          add: (geoObject: unknown) => void;
-          removeAll: () => void;
-        };
-        setBounds?: (bounds: number[][], options?: unknown) => void;
-      };
-      Placemark: new (
-        coords: number[],
-        properties?: Record<string, unknown>,
-        options?: Record<string, unknown>,
-      ) => {
-        events: {
-          add: (eventName: string, handler: () => void) => void;
-        };
-      };
-      ready: (callback: () => void) => void;
-    };
-  }
-}
-
 interface PartnerMapPickerProps {
   partners: Partner[];
   selectedPartnerId: string;
@@ -177,14 +148,7 @@ export function PartnerMapPicker({
 }: PartnerMapPickerProps) {
   const { t, i18n } = useTranslation();
   const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<{
-    destroy: () => void;
-    geoObjects: {
-      add: (geoObject: unknown) => void;
-      removeAll: () => void;
-    };
-    setBounds?: (bounds: number[][], options?: unknown) => void;
-  } | null>(null);
+  const mapInstanceRef = useRef<YandexMapInstance | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
 
