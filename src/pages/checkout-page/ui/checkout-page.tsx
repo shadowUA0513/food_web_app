@@ -19,6 +19,9 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconArrowLeft,
+  IconCheck,
+  IconInfoCircle,
+  IconX,
   IconUserCircle,
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
@@ -131,6 +134,7 @@ export function CheckoutPage() {
       showAppNotification({
         title: t("checkout.missingPartner"),
         color: "red",
+        icon: <IconInfoCircle size={18} />,
       });
       return;
     }
@@ -139,6 +143,7 @@ export function CheckoutPage() {
       showAppNotification({
         title: t("checkout.missingUser"),
         color: "red",
+        icon: <IconInfoCircle size={18} />,
       });
       return;
     }
@@ -167,6 +172,8 @@ export function CheckoutPage() {
       showAppNotification({
         title: t("checkout.submitSuccessTitle"),
         message: t("checkout.submitSuccessMessage"),
+        color: "green",
+        icon: <IconCheck size={18} />,
       });
       navigate({
         pathname: "/",
@@ -178,6 +185,7 @@ export function CheckoutPage() {
         message:
           error instanceof Error ? error.message : t("common.unknownError"),
         color: "red",
+        icon: <IconX size={18} />,
       });
     }
   }
