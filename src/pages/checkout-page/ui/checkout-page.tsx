@@ -108,25 +108,21 @@ export function CheckoutPage() {
   const paymentOptions: Array<{
     value: PaymentType;
     label: string;
-    description: string;
     logo?: string;
   }> = [
     {
       value: "payme",
       label: "Payme",
-      description: t("checkout.paymentPaymeHint"),
       logo: paymeLogo,
     },
     {
       value: "click",
       label: "Click",
-      description: t("checkout.paymentClickHint"),
       logo: clickLogo,
     },
     {
       value: "cash",
       label: t("checkout.paymentCash"),
-      description: t("checkout.paymentCashHint"),
     },
   ];
 
@@ -591,11 +587,8 @@ export function CheckoutPage() {
                     <Title order={4} c={titleColor}>
                       {t("checkout.paymentTitle")}
                     </Title>
-                    <Text size="sm" c={textColor}>
-                      {t("checkout.paymentDescription")}
-                    </Text>
 
-                    <Stack gap="sm">
+                    <Group grow align="stretch">
                       {paymentOptions.map((option) => {
                         const active = paymentType === option.value;
 
@@ -608,83 +601,86 @@ export function CheckoutPage() {
                             p="md"
                             onClick={() => setPaymentType(option.value)}
                             style={{
-                              width: "100%",
                               cursor: "pointer",
-                              textAlign: "left",
-                              background: active ? mutedBg : surfaceBg,
-                              border: active ? `1px solid ${brandColor}` : cardBorder,
+                              flex: 1,
+                              minHeight: 108,
+                              textAlign: "center",
+                              background: active
+                                ? hexToRgba(brandScale[1], isDark ? 0.22 : 0.55)
+                                : mutedBg,
+                              border: active
+                                ? `1px solid ${brandColor}`
+                                : isDark
+                                  ? "1px solid rgba(255,255,255,0.06)"
+                                  : "1px solid rgba(17,24,39,0.06)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            <Group justify="space-between" align="center" wrap="nowrap">
-                              <Group gap="md" wrap="nowrap">
-                                {option.logo ? (
-                                  <Box
+                            <Stack gap={10} align="center">
+                              {option.logo ? (
+                                <Box
+                                  style={{
+                                    width: 56,
+                                    height: 40,
+                                    display: "grid",
+                                    placeItems: "center",
+                                    overflow: "hidden",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <img
+                                    src={option.logo}
+                                    alt={option.label}
                                     style={{
-                                      width: 58,
-                                      height: 58,
-                                      borderRadius: 16,
-                                      background: isDark ? "#ffffff" : "#f8f9fb",
-                                      display: "grid",
-                                      placeItems: "center",
-                                      overflow: "hidden",
-                                      flexShrink: 0,
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "contain",
                                     }}
-                                  >
-                                    <img
-                                      src={option.logo}
-                                      alt={option.label}
-                                      style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "contain",
-                                        padding: 8,
-                                      }}
-                                    />
-                                  </Box>
-                                ) : (
-                                  <Box
-                                    style={{
-                                      width: 58,
-                                      height: 58,
-                                      borderRadius: 16,
-                                      background: hexToRgba(brandScale[1], 0.5),
-                                      display: "grid",
-                                      placeItems: "center",
-                                      flexShrink: 0,
-                                    }}
-                                  >
-                                    <IconCash size={28} color={brandColor} />
-                                  </Box>
-                                )}
-
-                                <Stack gap={4}>
-                                  <Text fw={800} c={titleColor}>
-                                    {option.label}
-                                  </Text>
-                                  <Text size="sm" c={textColor}>
-                                    {option.description}
-                                  </Text>
-                                </Stack>
-                              </Group>
-
+                                  />
+                                </Box>
+                              ) : (
+                                <Box
+                                  style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 999,
+                                    background: active
+                                      ? brandColor
+                                      : hexToRgba(brandScale[1], 0.45),
+                                    display: "grid",
+                                    placeItems: "center",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <IconCash
+                                    size={20}
+                                    color={active ? "#ffffff" : brandColor}
+                                  />
+                                </Box>
+                              )}
+                              <Text fw={800} size="sm" c={titleColor}>
+                                {option.label}
+                              </Text>
                               <Box
                                 style={{
-                                  width: 18,
-                                  height: 18,
+                                  width: 10,
+                                  height: 10,
                                   borderRadius: "50%",
+                                  background: active ? brandColor : "transparent",
                                   border: active
-                                    ? `5px solid ${brandColor}`
+                                    ? `1px solid ${brandColor}`
                                     : isDark
-                                      ? "2px solid rgba(255,255,255,0.24)"
-                                      : "2px solid rgba(17,24,39,0.16)",
-                                  flexShrink: 0,
+                                      ? "1px solid rgba(255,255,255,0.16)"
+                                      : "1px solid rgba(17,24,39,0.14)",
                                 }}
                               />
-                            </Group>
+                            </Stack>
                           </Paper>
                         );
                       })}
-                    </Stack>
+                    </Group>
                   </Stack>
                 </Paper>
 
