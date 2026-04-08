@@ -20,6 +20,7 @@ import { useDisclosure } from "@mantine/hooks";
 import {
   IconArrowLeft,
   IconCheck,
+  IconCash,
   IconInfoCircle,
   IconX,
   IconUserCircle,
@@ -45,10 +46,13 @@ import {
 import type { CreateOrderPayload } from "../../../types/order";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
+import clickLogo from "../../../assets/click.png";
+import paymeLogo from "../../../assets/payme.png";
 import { DeliveryAddressPicker } from "./delivery-address-picker";
 import { PartnerMapPicker } from "./partner-map-picker";
 
 type OrderType = "partners" | "myself";
+type PaymentType = "payme" | "click" | "cash";
 
 export function CheckoutPage() {
   const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
@@ -64,6 +68,7 @@ export function CheckoutPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const [comment, setComment] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [paymentType, setPaymentType] = useState<PaymentType>("cash");
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
@@ -100,6 +105,30 @@ export function CheckoutPage() {
   const cardBorder = isDark
     ? "1px solid rgba(255,255,255,0.08)"
     : "1px solid rgba(17,24,39,0.08)";
+  const paymentOptions: Array<{
+    value: PaymentType;
+    label: string;
+    description: string;
+    logo?: string;
+  }> = [
+    {
+      value: "payme",
+      label: "Payme",
+      description: t("checkout.paymentPaymeHint"),
+      logo: paymeLogo,
+    },
+    {
+      value: "click",
+      label: "Click",
+      description: t("checkout.paymentClickHint"),
+      logo: clickLogo,
+    },
+    {
+      value: "cash",
+      label: t("checkout.paymentCash"),
+      description: t("checkout.paymentCashHint"),
+    },
+  ];
 
   function getLocalizedValue(nameUz: string, nameRu: string) {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
@@ -166,7 +195,7 @@ export function CheckoutPage() {
       company_id: companyId,
       delivery_address: orderType === "myself" ? deliveryAddress.trim() : "",
       user_id: telegramUser.TgID,
-      payment_type: "cash",
+      payment_type: paymentType,
       comment: comment.trim() || undefined,
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,
@@ -547,6 +576,115 @@ export function CheckoutPage() {
                         isDark={isDark}
                       />
                     ) : null}
+                  </Stack>
+                </Paper>
+
+                <Paper
+                  radius={20}
+                  p="lg"
+                  style={{
+                    background: surfaceBg,
+                    border: cardBorder,
+                  }}
+                >
+                  <Stack gap="md">
+                    <Title order={4} c={titleColor}>
+                      {t("checkout.paymentTitle")}
+                    </Title>
+                    <Text size="sm" c={textColor}>
+                      {t("checkout.paymentDescription")}
+                    </Text>
+
+                    <Stack gap="sm">
+                      {paymentOptions.map((option) => {
+                        const active = paymentType === option.value;
+
+                        return (
+                          <Paper
+                            key={option.value}
+                            component="button"
+                            type="button"
+                            radius={18}
+                            p="md"
+                            onClick={() => setPaymentType(option.value)}
+                            style={{
+                              width: "100%",
+                              cursor: "pointer",
+                              textAlign: "left",
+                              background: active ? mutedBg : surfaceBg,
+                              border: active ? `1px solid ${brandColor}` : cardBorder,
+                            }}
+                          >
+                            <Group justify="space-between" align="center" wrap="nowrap">
+                              <Group gap="md" wrap="nowrap">
+                                {option.logo ? (
+                                  <Box
+                                    style={{
+                                      width: 58,
+                                      height: 58,
+                                      borderRadius: 16,
+                                      background: isDark ? "#ffffff" : "#f8f9fb",
+                                      display: "grid",
+                                      placeItems: "center",
+                                      overflow: "hidden",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    <img
+                                      src={option.logo}
+                                      alt={option.label}
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "contain",
+                                        padding: 8,
+                                      }}
+                                    />
+                                  </Box>
+                                ) : (
+                                  <Box
+                                    style={{
+                                      width: 58,
+                                      height: 58,
+                                      borderRadius: 16,
+                                      background: hexToRgba(brandScale[1], 0.5),
+                                      display: "grid",
+                                      placeItems: "center",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    <IconCash size={28} color={brandColor} />
+                                  </Box>
+                                )}
+
+                                <Stack gap={4}>
+                                  <Text fw={800} c={titleColor}>
+                                    {option.label}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {option.description}
+                                  </Text>
+                                </Stack>
+                              </Group>
+
+                              <Box
+                                style={{
+                                  width: 18,
+                                  height: 18,
+                                  borderRadius: "50%",
+                                  border: active
+                                    ? `5px solid ${brandColor}`
+                                    : isDark
+                                      ? "2px solid rgba(255,255,255,0.24)"
+                                      : "2px solid rgba(17,24,39,0.16)",
+                                  flexShrink: 0,
+                                }}
+                              />
+                            </Group>
+                          </Paper>
+                        );
+                      })}
+                    </Stack>
                   </Stack>
                 </Paper>
 
