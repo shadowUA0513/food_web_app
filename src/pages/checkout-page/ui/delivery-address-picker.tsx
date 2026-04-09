@@ -1,4 +1,4 @@
-import { Box, Button, Group, Paper, Stack, Text } from "@mantine/core";
+import { ActionIcon, Box, Paper, Stack, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IconMapPin } from "@tabler/icons-react";
@@ -256,43 +256,55 @@ export function DeliveryAddressPicker({
             : "1px solid rgba(17,24,39,0.08)",
         }}
       >
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Stack gap={4}>
-            <Text fw={800} c={titleColor}>
-              {t("checkout.addressMapTitle")}
-            </Text>
-            <Text size="sm" c={textColor}>
-              {t("checkout.addressMapDescription")}
-            </Text>
-          </Stack>
-
-          <Button
-            radius="xl"
-            variant="light"
-            color={brandColor}
-            leftSection={<IconMapPin size={16} />}
-            onClick={locateUser}
-            loading={isLocatingUser}
-            disabled={isResolvingAddress}
-          >
-            {t("checkout.addressLocateMe")}
-          </Button>
-        </Group>
+        <Stack gap={4}>
+          <Text fw={800} c={titleColor}>
+            {t("checkout.addressMapTitle")}
+          </Text>
+          <Text size="sm" c={textColor}>
+            {t("checkout.addressMapDescription")}
+          </Text>
+        </Stack>
       </Paper>
 
-      <Box
-        ref={mapRef}
-        style={{
-          minHeight: 320,
-          height: "42dvh",
-          width: "100%",
-          overflow: "hidden",
-          borderRadius: 24,
-          border: isDark
-            ? "1px solid rgba(255,255,255,0.08)"
-            : "1px solid rgba(17,24,39,0.08)",
-        }}
-      />
+      <Box style={{ position: "relative" }}>
+        <Box
+          ref={mapRef}
+          style={{
+            minHeight: 320,
+            height: "42dvh",
+            width: "100%",
+            overflow: "hidden",
+            borderRadius: 24,
+            border: isDark
+              ? "1px solid rgba(255,255,255,0.08)"
+              : "1px solid rgba(17,24,39,0.08)",
+          }}
+        />
+
+        <ActionIcon
+          size={42}
+          radius="xl"
+          color={brandColor}
+          variant="filled"
+          aria-label={
+            selectedCoordinates
+              ? t("checkout.addressOpenInYandex")
+              : t("checkout.addressLocateMe")
+          }
+          onClick={selectedCoordinates ? openYandexRoute : locateUser}
+          style={{
+            position: "absolute",
+            right: 14,
+            bottom: 14,
+            zIndex: 2,
+            boxShadow: isDark
+              ? "0 10px 22px rgba(0,0,0,0.32)"
+              : "0 10px 22px rgba(15,23,42,0.16)",
+          }}
+        >
+          <IconMapPin size={18} />
+        </ActionIcon>
+      </Box>
 
       <Paper
         radius={18}
@@ -312,18 +324,6 @@ export function DeliveryAddressPicker({
             ? t("checkout.addressResolving")
             : value || t("checkout.addressPlaceholder")}
         </Text>
-        {selectedCoordinates ? (
-          <Button
-            mt="sm"
-            radius="xl"
-            variant="light"
-            color={brandColor}
-            leftSection={<IconMapPin size={16} />}
-            onClick={openYandexRoute}
-          >
-            {t("checkout.addressOpenInYandex")}
-          </Button>
-        ) : null}
         {mapError ? (
           <Text size="xs" c="red.6" mt={8}>
             {mapError}
