@@ -1,4 +1,4 @@
-﻿import {
+import {
   ActionIcon,
   Box,
   Card,
@@ -13,6 +13,7 @@
   Title,
 } from "@mantine/core";
 import { IconShoppingBagPlus, IconUserCircle } from "@tabler/icons-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../../app/theme/theme";
@@ -64,15 +65,50 @@ export function MenuContent({
   const { brandColor, brandScale } = useBrandTheme();
   const headerHeight = 104;
   const headerOffset = 14;
-  const visibleCategoriesWithProducts = visibleCategories
-    .map(({ category, products }) => ({
-      category,
-      products: products.filter((product) => {
-        const maybeActive = product as Product & { is_active?: boolean };
-        return product.is_available && maybeActive.is_active !== false;
-      }),
-    }))
-    .filter(({ products }) => products.length > 0);
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const visibleCategoriesWithProducts = useMemo(
+    () =>
+      visibleCategories
+        .map(({ category, products }) => ({
+          category,
+          products: products.filter((product) => {
+            const maybeActive = product as Product & { is_active?: boolean };
+            return product.is_available && maybeActive.is_active !== false;
+          }),
+        }))
+        .filter(({ products }) => products.length > 0),
+    [visibleCategories],
+  );
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
+    visibleCategoriesWithProducts[0]?.category.id ?? null,
+  );
+
+  useEffect(() => {
+    setActiveCategoryId((current) => {
+      if (
+        current &&
+        visibleCategoriesWithProducts.some(({ category }) => category.id === current)
+      ) {
+        return current;
+      }
+
+      return visibleCategoriesWithProducts[0]?.category.id ?? null;
+    });
+  }, [visibleCategoriesWithProducts]);
+
+  function scrollToCategory(categoryId: string) {
+    setActiveCategoryId(categoryId);
+
+    const element = categoryRefs.current[categoryId];
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
 
   return (
     <Box mih="100dvh" bg={isDark ? pageBg : "#ffffff"} px={12} py={14}>
@@ -150,6 +186,54 @@ export function MenuContent({
           </Text>
         </Group>
 
+        {!isLoading && !isError && visibleCategoriesWithProducts.length > 0 ? (
+          <Box
+            style={{
+              overflowX: "auto",
+              paddingBottom: 2,
+              scrollbarWidth: "none",
+            }}
+          >
+            <Group gap="xs" wrap="nowrap">
+              {visibleCategoriesWithProducts.map(({ category }) => {
+                const isActive = activeCategoryId === category.id;
+
+                return (
+                  <Paper
+                    key={category.id}
+                    component="button"
+                    type="button"
+                    px="sm"
+                    py={8}
+                    radius="xl"
+                    onClick={() => scrollToCategory(category.id)}
+                    style={{
+                      cursor: "pointer",
+                      border: isActive
+                        ? `1px solid ${brandColor}`
+                        : isDark
+                          ? "1px solid rgba(255,255,255,0.06)"
+                          : "1px solid rgba(15,23,42,0.08)",
+                      background: isActive
+                        ? isDark
+                          ? hexToRgba(brandColor, 0.16)
+                          : hexToRgba(brandColor, 0.08)
+                        : surfaceBg,
+                      color: isActive ? brandColor : titleColor,
+                      fontWeight: 700,
+                      fontSize: "0.82rem",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {getLocalizedValue(category.name_uz, category.name_ru)}
+                  </Paper>
+                );
+              })}
+            </Group>
+          </Box>
+        ) : null}
+
         {isLoading ? (
           <Center py="xl">
             <Loader color={brandColor} />
@@ -179,7 +263,13 @@ export function MenuContent({
         ) : null}
 
         {visibleCategoriesWithProducts.map(({ category, products }) => (
-          <Stack key={category.id} gap="sm">
+          <Stack
+            key={category.id}
+            gap="sm"
+            ref={(node) => {
+              categoryRefs.current[category.id] = node;
+            }}
+          >
             <Group justify="space-between" align="center" px={2}>
               <Title order={2} fz="1.05rem" fw={800} c={titleColor}>
                 {getLocalizedValue(category.name_uz, category.name_ru)}
@@ -207,7 +297,7 @@ export function MenuContent({
                       ? "1px solid rgba(255,255,255,0.06)"
                       : "1px solid #e7e8ec",
                     borderRadius: "0",
-                    background: isDark ? surfaceBg : "#ffffff",
+                    background: isDark ? "#111318" : "#ffffff",
                   }}
                 >
                   <Group justify="center" align="center" gap="sm" wrap="nowrap">
@@ -237,7 +327,7 @@ export function MenuContent({
                     </Box>
 
                     <Group
-                      ml={"4px"}
+                      ml="4px"
                       justify="space-between"
                       align="center"
                       gap="sm"
@@ -258,7 +348,7 @@ export function MenuContent({
                         <Box
                           px="sm"
                           py={5}
-                          mt={"4px"}
+                          mt="4px"
                           style={{
                             width: "fit-content",
                             maxWidth: "100%",
@@ -275,7 +365,6 @@ export function MenuContent({
                             {formatPrice(product.price)}
                           </Text>
                         </Box>
-
                       </Stack>
 
                       <ActionIcon
@@ -313,7 +402,9 @@ export function MenuContent({
           </Stack>
         ))}
 
-        {!isLoading && !isError && visibleCategoriesWithProducts.length === 0 ? (
+        {!isLoading &&
+        !isError &&
+        visibleCategoriesWithProducts.length === 0 ? (
           <Paper
             radius={24}
             p="lg"

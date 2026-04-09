@@ -86,6 +86,9 @@ export function DeliveryAddressPicker({
   const [mapError, setMapError] = useState<string | null>(null);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
+  const [selectedCoordinates, setSelectedCoordinates] = useState<
+    [number, number] | null
+  >(null);
   const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
 
   function updatePlacemark(latitude: number, longitude: number, label: string) {
@@ -128,11 +131,13 @@ export function DeliveryAddressPicker({
 
         updatePlacemark(latitude, longitude, address);
         onChange(address);
+        setSelectedCoordinates([latitude, longitude]);
         setMapError(null);
       })
       .catch(() => {
         setMapError(t("checkout.addressNotFound"));
         onChange("");
+        setSelectedCoordinates(null);
       })
       .finally(() => {
         setIsResolvingAddress(false);
@@ -229,6 +234,16 @@ export function DeliveryAddressPicker({
     };
   }, [brandColor, locale, onChange, t]);
 
+  function openYandexRoute() {
+    if (!selectedCoordinates) {
+      return;
+    }
+
+    const [latitude, longitude] = selectedCoordinates;
+    const url = `https://yandex.uz/maps/?rtext=~${latitude},${longitude}&rtt=auto`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <Stack gap="md">
       <Paper
@@ -297,6 +312,18 @@ export function DeliveryAddressPicker({
             ? t("checkout.addressResolving")
             : value || t("checkout.addressPlaceholder")}
         </Text>
+        {selectedCoordinates ? (
+          <Button
+            mt="sm"
+            radius="xl"
+            variant="light"
+            color={brandColor}
+            leftSection={<IconMapPin size={16} />}
+            onClick={openYandexRoute}
+          >
+            {t("checkout.addressOpenInYandex")}
+          </Button>
+        ) : null}
         {mapError ? (
           <Text size="xs" c="red.6" mt={8}>
             {mapError}

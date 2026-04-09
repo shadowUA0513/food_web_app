@@ -103,13 +103,7 @@ export function SettingsDrawer({
                   {userName}
                 </Text>
                 {userSubtitle ? (
-                  <Text
-                    mt="3px"
-                    fz="0.74rem"
-                    c={textColor}
-                    lh={1.1}
-                    truncate
-                  >
+                  <Text mt="3px" fz="0.74rem" c={textColor} lh={1.1} truncate>
                     {userSubtitle}
                   </Text>
                 ) : null}
@@ -141,6 +135,7 @@ export function SettingsDrawer({
             <SegmentedControl
               radius="xl"
               size="xs"
+              w={"140px"}
               value={locale}
               onChange={(value) => onLocaleChange(value as Locale)}
               data={[
