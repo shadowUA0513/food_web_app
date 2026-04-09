@@ -34,6 +34,8 @@ export function SettingsDrawer({
   onToggleDarkMode,
   titleColor,
   textColor,
+  userName,
+  userSubtitle,
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
   const drawerBg = isDark ? "#181b22" : "#f6f7fb";
@@ -83,6 +85,38 @@ export function SettingsDrawer({
         }}
       >
         <Stack gap={10}>
+          {userName ? (
+            <Group
+              justify="space-between"
+              align="center"
+              wrap="nowrap"
+              px={12}
+              py={10}
+              style={{
+                background: rowBg,
+                border: rowBorder,
+                borderRadius: 16,
+              }}
+            >
+              <Stack gap={4} style={{ minWidth: 0 }}>
+                <Text fw={800} fz="0.9rem" c={titleColor} lh={1.1} truncate>
+                  {userName}
+                </Text>
+                {userSubtitle ? (
+                  <Text
+                    mt="3px"
+                    fz="0.74rem"
+                    c={textColor}
+                    lh={1.1}
+                    truncate
+                  >
+                    {userSubtitle}
+                  </Text>
+                ) : null}
+              </Stack>
+            </Group>
+          ) : null}
+
           <Group
             justify="space-between"
             align="center"

@@ -44,7 +44,15 @@ export function ProductDetailsPage() {
     [categories],
   );
   const activeProduct = useMemo(
-    () => allProducts.find((product) => product.id === productId) ?? null,
+    () =>
+      allProducts.find((product) => {
+        const maybeActive = product as typeof product & { is_active?: boolean };
+        return (
+          product.id === productId &&
+          product.is_available &&
+          maybeActive.is_active !== false
+        );
+      }) ?? null,
     [allProducts, productId],
   );
 
@@ -240,11 +248,6 @@ export function ProductDetailsPage() {
                     </Text>
                   ) : null}
 
-                  {!activeProduct.is_available ? (
-                    <Text size="sm" fw={800} c="#df4b41" tt="uppercase">
-                      {t("product.closed")}
-                    </Text>
-                  ) : null}
                 </Stack>
 
                 <Box

@@ -64,6 +64,15 @@ export function MenuContent({
   const { brandColor, brandScale } = useBrandTheme();
   const headerHeight = 104;
   const headerOffset = 14;
+  const visibleCategoriesWithProducts = visibleCategories
+    .map(({ category, products }) => ({
+      category,
+      products: products.filter((product) => {
+        const maybeActive = product as Product & { is_active?: boolean };
+        return product.is_available && maybeActive.is_active !== false;
+      }),
+    }))
+    .filter(({ products }) => products.length > 0);
 
   return (
     <Box mih="100dvh" bg={isDark ? pageBg : "#ffffff"} px={12} py={14}>
@@ -169,7 +178,7 @@ export function MenuContent({
           </Paper>
         ) : null}
 
-        {visibleCategories.map(({ category, products }) => (
+        {visibleCategoriesWithProducts.map(({ category, products }) => (
           <Stack key={category.id} gap="sm">
             <Group justify="space-between" align="center" px={2}>
               <Title order={2} fz="1.05rem" fw={800} c={titleColor}>
@@ -267,11 +276,6 @@ export function MenuContent({
                           </Text>
                         </Box>
 
-                        {!product.is_available ? (
-                          <Text size="9px" fw={800} c="#df4b41" tt="uppercase">
-                            {t("product.closed")}
-                          </Text>
-                        ) : null}
                       </Stack>
 
                       <ActionIcon
@@ -309,7 +313,7 @@ export function MenuContent({
           </Stack>
         ))}
 
-        {!isLoading && !isError && visibleCategories.length === 0 ? (
+        {!isLoading && !isError && visibleCategoriesWithProducts.length === 0 ? (
           <Paper
             radius={24}
             p="lg"
