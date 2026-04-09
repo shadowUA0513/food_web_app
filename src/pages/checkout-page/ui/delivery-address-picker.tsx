@@ -235,11 +235,23 @@ export function DeliveryAddressPicker({
   }, [brandColor, locale, onChange, t]);
 
   function openYandexRoute() {
-    if (!selectedCoordinates) {
+    const fallbackCoordinates =
+      (
+        mapInstanceRef.current as YandexMapInstance & {
+          getCenter?: () => number[];
+        }
+      )?.getCenter?.() ?? null;
+    const targetCoordinates = selectedCoordinates ?? (
+      fallbackCoordinates && fallbackCoordinates.length >= 2
+        ? [fallbackCoordinates[0], fallbackCoordinates[1]]
+        : null
+    );
+
+    if (!targetCoordinates) {
       return;
     }
 
-    const [latitude, longitude] = selectedCoordinates;
+    const [latitude, longitude] = targetCoordinates;
     const url = `https://yandex.uz/maps/?rtext=~${latitude},${longitude}&rtt=auto`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
@@ -286,12 +298,8 @@ export function DeliveryAddressPicker({
           radius="xl"
           color={brandColor}
           variant="filled"
-          aria-label={
-            selectedCoordinates
-              ? t("checkout.addressOpenInYandex")
-              : t("checkout.addressLocateMe")
-          }
-          onClick={selectedCoordinates ? openYandexRoute : locateUser}
+          aria-label={t("checkout.addressOpenInYandex")}
+          onClick={openYandexRoute}
           style={{
             position: "absolute",
             right: 14,
