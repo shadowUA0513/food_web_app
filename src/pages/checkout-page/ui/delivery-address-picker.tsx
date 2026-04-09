@@ -86,9 +86,6 @@ export function DeliveryAddressPicker({
   const [mapError, setMapError] = useState<string | null>(null);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
-  const [selectedCoordinates, setSelectedCoordinates] = useState<
-    [number, number] | null
-  >(null);
   const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
 
   function updatePlacemark(latitude: number, longitude: number, label: string) {
@@ -131,13 +128,11 @@ export function DeliveryAddressPicker({
 
         updatePlacemark(latitude, longitude, address);
         onChange(address);
-        setSelectedCoordinates([latitude, longitude]);
         setMapError(null);
       })
       .catch(() => {
         setMapError(t("checkout.addressNotFound"));
         onChange("");
-        setSelectedCoordinates(null);
       })
       .finally(() => {
         setIsResolvingAddress(false);
@@ -235,25 +230,7 @@ export function DeliveryAddressPicker({
   }, [brandColor, locale, onChange, t]);
 
   function openYandexRoute() {
-    const fallbackCoordinates =
-      (
-        mapInstanceRef.current as YandexMapInstance & {
-          getCenter?: () => number[];
-        }
-      )?.getCenter?.() ?? null;
-    const targetCoordinates = selectedCoordinates ?? (
-      fallbackCoordinates && fallbackCoordinates.length >= 2
-        ? [fallbackCoordinates[0], fallbackCoordinates[1]]
-        : null
-    );
-
-    if (!targetCoordinates) {
-      return;
-    }
-
-    const [latitude, longitude] = targetCoordinates;
-    const url = `https://yandex.uz/maps/?rtext=~${latitude},${longitude}&rtt=auto`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    locateUser();
   }
 
   return (
@@ -298,8 +275,9 @@ export function DeliveryAddressPicker({
           radius="xl"
           color={brandColor}
           variant="filled"
-          aria-label={t("checkout.addressOpenInYandex")}
+          aria-label={t("checkout.addressLocateMe")}
           onClick={openYandexRoute}
+          loading={isLocatingUser}
           style={{
             position: "absolute",
             right: 14,
