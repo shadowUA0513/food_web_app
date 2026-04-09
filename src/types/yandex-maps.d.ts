@@ -17,6 +17,7 @@ declare global {
     geoObjects: YandexMapGeoObjects;
     events: YandexMapEvents;
     setBounds?: (bounds: number[][], options?: unknown) => void;
+    setCenter?: (center: number[], zoom?: number, options?: unknown) => void;
   }
 
   interface YandexPlacemarkInstance {

@@ -1,22 +1,13 @@
 import {
-  ActionIcon,
-  Box,
   Drawer,
   Group,
   Paper,
+  SegmentedControl,
   Stack,
   Switch,
   Text,
 } from "@mantine/core";
-import {
-  IconCheck,
-  IconLanguage,
-  IconMoonStars,
-  IconUserCircle,
-} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
-import { hexToRgba } from "../../../../app/theme/theme";
 import type { Locale } from "../home-screen-types";
 
 interface SettingsDrawerProps {
@@ -34,23 +25,6 @@ interface SettingsDrawerProps {
   userSubtitle?: string;
 }
 
-const languageOptions: Array<{
-  value: Locale;
-  label: string;
-  caption: string;
-}> = [
-  {
-    value: "uz",
-    label: "O'zbekcha",
-    caption: "Latin script",
-  },
-  {
-    value: "ru",
-    label: "Russian",
-    caption: "Cyrillic script",
-  },
-];
-
 export function SettingsDrawer({
   opened,
   onClose,
@@ -58,28 +32,19 @@ export function SettingsDrawer({
   onLocaleChange,
   isDark,
   onToggleDarkMode,
-  surfaceBg,
   titleColor,
   textColor,
-  mutedBg,
-  userName,
-  userSubtitle,
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
-  const { brandColor, brandScale } = useBrandTheme();
-
-  const cardBorder = isDark
-    ? "1px solid rgba(255,255,255,0.07)"
-    : "1px solid rgba(15,23,42,0.08)";
-  const subtleBorder = isDark
-    ? "1px solid rgba(255,255,255,0.08)"
-    : "1px solid rgba(15,23,42,0.07)";
-  const panelBg = isDark
-    ? "linear-gradient(180deg, rgba(29,33,42,0.98) 0%, rgba(21,24,31,0.98) 100%)"
-    : "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,248,252,0.98) 100%)";
-  const heroBg = isDark
-    ? `radial-gradient(circle at top left, ${hexToRgba(brandColor, 0.22)}, transparent 44%), linear-gradient(180deg, #1f232d 0%, #171a21 100%)`
-    : `radial-gradient(circle at top left, ${hexToRgba(brandColor, 0.16)}, transparent 42%), linear-gradient(180deg, ${brandScale[0]} 0%, #ffffff 100%)`;
+  const drawerBg = isDark ? "#181b22" : "#f6f7fb";
+  const cardBg = isDark ? "#1b1f27" : "#ffffff";
+  const rowBg = isDark ? "#232831" : "#f4f6fa";
+  const borderColor = isDark
+    ? "1px solid rgba(255,255,255,0.06)"
+    : "1px solid rgba(15,23,42,0.06)";
+  const rowBorder = isDark
+    ? "1px solid rgba(255,255,255,0.04)"
+    : "1px solid rgba(15,23,42,0.05)";
 
   return (
     <Drawer
@@ -87,17 +52,20 @@ export function SettingsDrawer({
       onClose={onClose}
       position="right"
       title={t("settings.title")}
-      padding="lg"
+      padding="md"
+      size="100%"
       styles={{
-        content: { background: panelBg },
+        content: {
+          background: drawerBg,
+        },
         header: {
           background: "transparent",
           color: titleColor,
-          paddingBottom: 8,
+          paddingBottom: 6,
         },
         title: {
           fontWeight: 900,
-          fontSize: "1.05rem",
+          fontSize: "1rem",
           letterSpacing: "-0.02em",
         },
         body: {
@@ -105,249 +73,119 @@ export function SettingsDrawer({
         },
       }}
     >
-      <Stack gap="lg">
-        {userName ? (
-          <Paper
-            radius={24}
-            p="lg"
+      <Paper
+        radius={18}
+        p={12}
+        style={{
+          background: cardBg,
+          border: borderColor,
+          maxWidth: 520,
+        }}
+      >
+        <Stack gap={10}>
+          <Group
+            justify="space-between"
+            align="center"
+            wrap="nowrap"
+            px={12}
+            py={10}
             style={{
-              background: surfaceBg,
-              border: cardBorder,
-              boxShadow: isDark
-                ? "0 14px 32px rgba(0,0,0,0.22)"
-                : "0 16px 32px rgba(15,23,42,0.06)",
+              background: rowBg,
+              border: rowBorder,
+              borderRadius: 16,
             }}
           >
-            <Group gap="sm" wrap="nowrap">
-              <Box
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 18,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: isDark
-                    ? hexToRgba(brandColor, 0.12)
-                    : hexToRgba(brandColor, 0.08),
-                  color: brandColor,
-                }}
-              >
-                <IconUserCircle size={24} />
-              </Box>
-
-              <Stack gap={1}>
-                <Text fw={900} c={titleColor}>
-                  {userName}
-                </Text>
-                {userSubtitle ? (
-                  <Text size="sm" c={textColor}>
-                    {userSubtitle}
-                  </Text>
-                ) : null}
-              </Stack>
-            </Group>
-          </Paper>
-        ) : null}
-
-        <Paper
-          radius={28}
-          p="lg"
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            background: heroBg,
-            border: cardBorder,
-            boxShadow: isDark
-              ? "0 18px 38px rgba(0,0,0,0.32)"
-              : "0 20px 40px rgba(15,23,42,0.08)",
-          }}
-        >
-          <Box
-            style={{
-              position: "absolute",
-              top: -44,
-              right: -34,
-              width: 140,
-              height: 140,
-              borderRadius: "50%",
-              background: isDark
-                ? "rgba(255,255,255,0.04)"
-                : hexToRgba(brandColor, 0.09),
-            }}
-          />
-
-          <Stack gap="lg" style={{ position: "relative" }}>
-            <Group gap="sm" align="flex-start" wrap="nowrap">
-              <ActionIcon
-                size={48}
-                radius="xl"
-                variant="filled"
-                color={brandColor}
-                style={{
-                  boxShadow: `0 12px 24px ${hexToRgba(brandColor, 0.28)}`,
-                }}
-              >
-                <IconLanguage size={22} />
-              </ActionIcon>
-
-              <Stack gap={2}>
-                <Text fw={900} fz="1.15rem" c={titleColor} lh={1.1}>
-                  {t("settings.language")}
-                </Text>
-                <Text size="sm" c={textColor} maw={240}>
-                  {t("settings.chooseLanguage")}
-                </Text>
-              </Stack>
-            </Group>
-
-            <Stack gap="sm">
-              {languageOptions.map((option) => {
-                const active = locale === option.value;
-                const activeAccent = brandColor;
-
-                return (
-                  <Paper
-                    key={option.value}
-                    component="button"
-                    type="button"
-                    radius={22}
-                    p="md"
-                    onClick={() => onLocaleChange(option.value)}
-                    style={{
-                      width: "100%",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      background: active
-                        ? isDark
-                          ? "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)"
-                          : `linear-gradient(135deg, rgba(255,255,255,1) 0%, ${hexToRgba(brandColor, 0.08)} 100%)`
-                        : mutedBg,
-                      border: active ? `1px solid ${activeAccent}` : subtleBorder,
-                      boxShadow: active
-                        ? isDark
-                          ? `0 14px 26px ${hexToRgba(activeAccent, 0.14)}`
-                          : `0 16px 30px ${hexToRgba(activeAccent, 0.14)}`
-                        : "none",
-                      transition: "all 160ms ease",
-                    }}
-                  >
-                    <Group justify="space-between" align="center" wrap="nowrap">
-                      <Group gap="sm" wrap="nowrap">
-                        <Box
-                          style={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: 16,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: active ? hexToRgba(activeAccent, 0.1) : "transparent",
-                            border: active
-                              ? `1px solid ${hexToRgba(activeAccent, 0.35)}`
-                              : subtleBorder,
-                            color: active ? activeAccent : textColor,
-                            fontWeight: 900,
-                            fontSize: "0.82rem",
-                            letterSpacing: "0.08em",
-                          }}
-                        >
-                          {option.value.toUpperCase()}
-                        </Box>
-
-                        <Stack gap={1}>
-                          <Text fw={800} fz="1rem" c={titleColor}>
-                            {option.label}
-                          </Text>
-                          <Text size="xs" c={textColor}>
-                            {option.caption}
-                          </Text>
-                        </Stack>
-                      </Group>
-
-                      <Box
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: active ? activeAccent : "transparent",
-                          border: active
-                            ? "none"
-                            : isDark
-                              ? "1px solid rgba(255,255,255,0.12)"
-                              : "1px solid rgba(15,23,42,0.12)",
-                          color: active ? "#ffffff" : "transparent",
-                        }}
-                      >
-                        <IconCheck size={16} />
-                      </Box>
-                    </Group>
-                  </Paper>
-                );
-              })}
+            <Stack gap={4}>
+              <Text fw={800} fz="0.9rem" c={titleColor} lh={1.1}>
+                {t("settings.language")}
+              </Text>
+              <Text mt={"3px"} fz="0.74rem" c={textColor} lh={1.1}>
+                UZ / RU
+              </Text>
             </Stack>
-          </Stack>
-        </Paper>
 
-        <Paper
-          radius={24}
-          p="lg"
-          style={{
-            background: surfaceBg,
-            border: cardBorder,
-            boxShadow: isDark
-              ? "0 14px 32px rgba(0,0,0,0.22)"
-              : "0 16px 32px rgba(15,23,42,0.06)",
-          }}
-        >
-          <Group justify="space-between" align="center" wrap="nowrap">
-            <Group gap="sm" wrap="nowrap">
-              <Box
-                style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: 18,
+            <SegmentedControl
+              radius="xl"
+              size="xs"
+              value={locale}
+              onChange={(value) => onLocaleChange(value as Locale)}
+              data={[
+                { label: "UZ", value: "uz" },
+                { label: "RU", value: "ru" },
+              ]}
+              styles={{
+                root: {
+                  background: isDark ? "#2b313d" : "#e9edf3",
+                  padding: 4,
+                },
+                control: {
+                  minWidth: 44,
+                },
+                indicator: {
+                  background: isDark ? "#343b48" : "#ffffff",
+                  boxShadow: isDark
+                    ? "0 3px 10px rgba(0,0,0,0.22)"
+                    : "0 2px 8px rgba(15,23,42,0.08)",
+                },
+                label: {
+                  minHeight: 30,
+                  paddingInline: 12,
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  color: isDark ? "#d9dee7" : textColor,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: isDark
-                    ? "rgba(255,214,10,0.12)"
-                    : "rgba(15,23,42,0.05)",
-                  color: isDark ? "#ffd54a" : "#151515",
-                }}
-              >
-                <IconMoonStars size={21} />
-              </Box>
-
-              <Stack gap={1}>
-                <Text fw={800} c={titleColor}>
-                  {t("settings.darkMode")}
-                </Text>
-                <Text size="sm" c={textColor} maw={220}>
-                  {t("settings.switchAppearance")}
-                </Text>
-              </Stack>
-            </Group>
-
-            <Switch
-              checked={isDark}
-              onChange={(event) => onToggleDarkMode(event.currentTarget.checked)}
-              color={brandColor}
-              size="lg"
-              thumbIcon={
-                isDark ? (
-                  <IconMoonStars size={12} stroke={2.5} />
-                ) : (
-                  <IconCheck size={12} stroke={2.5} />
-                )
-              }
+                  letterSpacing: "0.01em",
+                  textTransform: "lowercase",
+                },
+              }}
             />
           </Group>
-        </Paper>
-      </Stack>
+
+          <Group
+            justify="space-between"
+            align="center"
+            wrap="nowrap"
+            px={12}
+            py={10}
+            style={{
+              background: rowBg,
+              border: rowBorder,
+              borderRadius: 16,
+            }}
+          >
+            <Stack gap={4}>
+              <Text fw={800} fz="0.9rem" c={titleColor} lh={1.1}>
+                {t("settings.darkMode")}
+              </Text>
+              <Text mt={"3px"} fz="0.74rem" c={textColor} lh={1.1}>
+                {t("settings.switchAppearance")}
+              </Text>
+            </Stack>
+
+            <Switch
+              size="sm"
+              color="dark"
+              checked={isDark}
+              onChange={(event) =>
+                onToggleDarkMode(event.currentTarget.checked)
+              }
+              aria-label={t("settings.darkMode")}
+              styles={{
+                track: {
+                  cursor: "pointer",
+                  background: isDark ? "#35b558" : undefined,
+                  borderColor: "transparent",
+                },
+                thumb: {
+                  borderWidth: 0,
+                },
+              }}
+            />
+          </Group>
+        </Stack>
+      </Paper>
     </Drawer>
   );
 }

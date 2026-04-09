@@ -1,6 +1,7 @@
-import { Box, Paper, Stack, Text } from "@mantine/core";
+import { Box, Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IconMapPin } from "@tabler/icons-react";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 
 interface DeliveryAddressPickerProps {
@@ -84,7 +85,86 @@ export function DeliveryAddressPicker({
   const mapInstanceRef = useRef<YandexMapInstance | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
+  const [isLocatingUser, setIsLocatingUser] = useState(false);
   const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
+
+  function updatePlacemark(latitude: number, longitude: number, label: string) {
+    const map = mapInstanceRef.current;
+    if (!map || !window.ymaps) {
+      return;
+    }
+
+    map.geoObjects.removeAll();
+    const placemark = new window.ymaps.Placemark(
+      [latitude, longitude],
+      {
+        hintContent: label,
+        balloonContent: label,
+      },
+      {
+        preset: "islands#dotIcon",
+        iconColor: brandColor,
+      },
+    );
+
+    map.geoObjects.add(placemark);
+    map.setCenter?.([latitude, longitude], 16, {
+      checkZoomRange: true,
+      duration: 250,
+    });
+  }
+
+  function selectCoordinates(latitude: number, longitude: number) {
+    setIsResolvingAddress(true);
+    setMapError(null);
+
+    void reverseGeocodeWithNominatim(latitude, longitude, locale)
+      .then((address) => {
+        if (!address) {
+          setMapError(t("checkout.addressNotFound"));
+          onChange("");
+          return;
+        }
+
+        updatePlacemark(latitude, longitude, address);
+        onChange(address);
+        setMapError(null);
+      })
+      .catch(() => {
+        setMapError(t("checkout.addressNotFound"));
+        onChange("");
+      })
+      .finally(() => {
+        setIsResolvingAddress(false);
+      });
+  }
+
+  function locateUser() {
+    if (!navigator.geolocation) {
+      setMapError(t("checkout.addressLocationUnavailable"));
+      return;
+    }
+
+    setIsLocatingUser(true);
+    setMapError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        selectCoordinates(latitude, longitude);
+        setIsLocatingUser(false);
+      },
+      () => {
+        setMapError(t("checkout.addressLocationUnavailable"));
+        setIsLocatingUser(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000,
+      },
+    );
+  }
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -118,23 +198,6 @@ export function DeliveryAddressPicker({
             },
           );
 
-          const updatePlacemark = (latitude: number, longitude: number, label: string) => {
-            map.geoObjects.removeAll();
-            const placemark = new window.ymaps!.Placemark(
-              [latitude, longitude],
-              {
-                hintContent: label,
-                balloonContent: label,
-              },
-              {
-                preset: "islands#dotIcon",
-                iconColor: brandColor,
-              },
-            );
-
-            map.geoObjects.add(placemark);
-          };
-
           map.events.add("click", (event: unknown) => {
             const coords = (event as { get?: (name: string) => unknown })
               .get?.("coords") as number[] | undefined;
@@ -145,31 +208,12 @@ export function DeliveryAddressPicker({
 
             const latitude = coords[0];
             const longitude = coords[1];
-            setIsResolvingAddress(true);
-            setMapError(null);
-            void reverseGeocodeWithNominatim(latitude, longitude, locale)
-              .then((address) => {
-                if (!address) {
-                  setMapError(t("checkout.addressNotFound"));
-                  onChange("");
-                  return;
-                }
-
-                updatePlacemark(latitude, longitude, address);
-                onChange(address);
-                setMapError(null);
-              })
-              .catch(() => {
-                setMapError(t("checkout.addressNotFound"));
-                onChange("");
-              })
-              .finally(() => {
-                setIsResolvingAddress(false);
-              });
+            selectCoordinates(latitude, longitude);
           });
 
           mapInstanceRef.current = map;
           setMapError(null);
+          locateUser();
         });
       })
       .catch(() => {
@@ -183,7 +227,7 @@ export function DeliveryAddressPicker({
       mapInstanceRef.current?.destroy();
       mapInstanceRef.current = null;
     };
-  }, [brandColor, onChange, t]);
+  }, [brandColor, locale, onChange, t]);
 
   return (
     <Stack gap="md">
@@ -197,14 +241,28 @@ export function DeliveryAddressPicker({
             : "1px solid rgba(17,24,39,0.08)",
         }}
       >
-        <Stack gap={4}>
-          <Text fw={800} c={titleColor}>
-            {t("checkout.addressMapTitle")}
-          </Text>
-          <Text size="sm" c={textColor}>
-            {t("checkout.addressMapDescription")}
-          </Text>
-        </Stack>
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Stack gap={4}>
+            <Text fw={800} c={titleColor}>
+              {t("checkout.addressMapTitle")}
+            </Text>
+            <Text size="sm" c={textColor}>
+              {t("checkout.addressMapDescription")}
+            </Text>
+          </Stack>
+
+          <Button
+            radius="xl"
+            variant="light"
+            color={brandColor}
+            leftSection={<IconMapPin size={16} />}
+            onClick={locateUser}
+            loading={isLocatingUser}
+            disabled={isResolvingAddress}
+          >
+            {t("checkout.addressLocateMe")}
+          </Button>
+        </Group>
       </Paper>
 
       <Box
@@ -235,7 +293,7 @@ export function DeliveryAddressPicker({
           {t("checkout.selectedAddress")}
         </Text>
         <Text size="sm" c={textColor} mt={4}>
-          {isResolvingAddress
+          {isResolvingAddress || isLocatingUser
             ? t("checkout.addressResolving")
             : value || t("checkout.addressPlaceholder")}
         </Text>

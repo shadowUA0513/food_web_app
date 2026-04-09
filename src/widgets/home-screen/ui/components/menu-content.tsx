@@ -66,7 +66,7 @@ export function MenuContent({
   const headerOffset = 14;
 
   return (
-    <Box mih="100dvh" bg={pageBg} px={12} py={14}>
+    <Box mih="100dvh" bg={isDark ? pageBg : "#ffffff"} px={12} py={14}>
       <Stack maw={TELEGRAM_MOBILE_WIDTH} mx="auto" gap="lg">
         <Box
           style={{
@@ -177,7 +177,7 @@ export function MenuContent({
               </Title>
             </Group>
 
-            <SimpleGrid cols={2} spacing={12} verticalSpacing={12}>
+            <SimpleGrid cols={1} spacing={6} verticalSpacing={6}>
               {products.map((product) => (
                 <Card
                   key={product.id}
@@ -190,76 +190,92 @@ export function MenuContent({
                   }}
                   role="button"
                   tabIndex={0}
-                  radius={18}
-                  p={0}
+                  p={8}
                   style={{
-                    overflow: "hidden",
                     cursor: "pointer",
-                    border: "none",
                     textAlign: "left",
-                    background: surfaceBg,
-                    boxShadow: isDark
-                      ? "0 8px 22px rgba(0, 0, 0, 0.22)"
-                      : "0 2px 14px rgba(17, 24, 39, 0.05)",
+                    borderBottom: isDark
+                      ? "1px solid rgba(255,255,255,0.06)"
+                      : "1px solid #e7e8ec",
+                    borderRadius: "0",
+                    background: isDark ? surfaceBg : "#ffffff",
                   }}
                 >
-                  <Box
-                    px="sm"
-                    pt="md"
-                    pb={0}
-                    style={{
-                      minHeight: 116,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: mutedBg,
-                    }}
-                  >
-                    <ProductImage
-                      src={product.image_url}
-                      alt={getLocalizedValue(product.name_uz, product.name_ru)}
-                      h={172}
-                      fit="contain"
-                      background={`linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 100%), linear-gradient(135deg, ${brandScale[2]} 0%, ${brandColor} 48%, ${brandScale[7]} 100%)`}
-                    />
-                  </Box>
-
-                  <Stack gap={6} px="md" pb="md" pt="xs">
-                    <Text
-                      fw={800}
-                      fz="0.98rem"
-                      lh={1.15}
-                      c={titleColor}
-                      lineClamp={2}
+                  <Group justify="center" align="center" gap="sm" wrap="nowrap">
+                    <Box
+                      style={{
+                        width: 76,
+                        minWidth: 76,
+                        height: 76,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: mutedBg,
+                        overflow: "hidden",
+                      }}
                     >
-                      {getLocalizedValue(product.name_uz, product.name_ru)}
-                    </Text>
+                      <ProductImage
+                        src={product.image_url}
+                        alt={getLocalizedValue(
+                          product.name_uz,
+                          product.name_ru,
+                        )}
+                        h={76}
+                        fit="contain"
+                        background={`linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 100%), linear-gradient(135deg, ${brandScale[2]} 0%, ${brandColor} 48%, ${brandScale[7]} 100%)`}
+                      />
+                    </Box>
 
-                    <Text
-                      size="xs"
-                      c={textColor}
-                      lh={1.35}
-                      lineClamp={3}
-                      mih={48}
+                    <Group
+                      ml={"4px"}
+                      justify="space-between"
+                      align="center"
+                      gap="sm"
+                      wrap="nowrap"
+                      style={{ flex: 1 }}
                     >
-                      {product.description ||
-                        t("menu.productFallbackDescription")}
-                    </Text>
-
-                    <Group justify="space-between" align="end" gap="xs" mt={2}>
-                      <Stack gap={2}>
-                        <Text fw={900} fz="1.1rem" c={titleColor}>
-                          {formatPrice(product.price)}
+                      <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
+                        <Text
+                          fw={800}
+                          fz="0.9rem"
+                          lh={1.15}
+                          c={titleColor}
+                          lineClamp={1}
+                        >
+                          {getLocalizedValue(product.name_uz, product.name_ru)}
                         </Text>
+
+                        <Box
+                          px="sm"
+                          py={5}
+                          mt={"4px"}
+                          style={{
+                            width: "fit-content",
+                            maxWidth: "100%",
+                            borderRadius: 999,
+                            background: isDark
+                              ? "rgba(255,255,255,0.08)"
+                              : "#f3f4f6",
+                            boxShadow: isDark
+                              ? "inset 0 0 0 1px rgba(255,255,255,0.04)"
+                              : "inset 0 0 0 1px rgba(15,23,42,0.04)",
+                          }}
+                        >
+                          <Text fw={900} fz="0.94rem" c={titleColor} lh={1}>
+                            {formatPrice(product.price)}
+                          </Text>
+                        </Box>
+
                         {!product.is_available ? (
-                          <Text size="10px" fw={800} c="#df4b41" tt="uppercase">
+                          <Text size="9px" fw={800} c="#df4b41" tt="uppercase">
                             {t("product.closed")}
                           </Text>
                         ) : null}
                       </Stack>
 
                       <ActionIcon
-                        size={40}
+                        size={34}
                         radius="xl"
                         variant={product.is_available ? "filled" : "light"}
                         color={brandColor}
@@ -283,10 +299,10 @@ export function MenuContent({
                           flexShrink: 0,
                         }}
                       >
-                        <IconShoppingBagPlus size={20} />
+                        <IconShoppingBagPlus size={17} />
                       </ActionIcon>
                     </Group>
-                  </Stack>
+                  </Group>
                 </Card>
               ))}
             </SimpleGrid>
