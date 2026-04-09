@@ -123,7 +123,8 @@ export function HomeScreen() {
         mutedBg={mutedBg}
         userName={telegramUser?.FullName}
         userSubtitle={
-          telegramUser?.Username ? `@${telegramUser.Username}` : undefined
+          telegramUser?.PhoneNumber ||
+          (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
         }
       />
 
