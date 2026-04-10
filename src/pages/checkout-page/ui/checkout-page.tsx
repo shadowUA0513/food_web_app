@@ -25,13 +25,14 @@ import {
   IconX,
   IconUserCircle,
 } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../app/theme/theme";
 import { useCreateCompanyOrder } from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
+import { useCompanySettings } from "../../../service/settings";
 import { useTelegramUser } from "../../../service/telegram-user";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import { showAppNotification } from "../../../shared/lib/notifications";
@@ -51,8 +52,13 @@ import paymeLogo from "../../../assets/payme.png";
 import { DeliveryAddressPicker } from "./delivery-address-picker";
 import { PartnerMapPicker } from "./partner-map-picker";
 
-type OrderType = "partners" | "myself";
+type OrderType = "delivery-to-organization" | "delivery-anywhere";
 type PaymentType = "payme" | "click" | "cash";
+
+const DEFAULT_SUPPORTED_ORDER_TYPES: OrderType[] = [
+  "delivery-to-organization",
+  "delivery-anywhere",
+];
 
 export function CheckoutPage() {
   const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
@@ -72,8 +78,9 @@ export function CheckoutPage() {
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
+  const { data: settings } = useCompanySettings(companyId);
   const [orderType, setOrderType] = useState<OrderType>(
-    initialPartnerId ? "partners" : "myself",
+    initialPartnerId ? "delivery-to-organization" : "delivery-anywhere",
   );
   const [selectedPartnerId, setSelectedPartnerId] = useState(initialPartnerId ?? "");
   const createOrderMutation = useCreateCompanyOrder();
@@ -91,10 +98,27 @@ export function CheckoutPage() {
     () => cartList.reduce((sum, item) => sum + item.product.price * item.count, 0),
     [cartList],
   );
+  const supportedOrderTypes = useMemo(() => {
+    const apiTypes = settings?.supported_order_types?.filter(
+      (type): type is OrderType =>
+        type === "delivery-to-organization" || type === "delivery-anywhere",
+    );
+
+    return apiTypes && apiTypes.length > 0 ? apiTypes : DEFAULT_SUPPORTED_ORDER_TYPES;
+  }, [settings?.supported_order_types]);
+  const minOrderAmount = settings?.min_order_amount ?? 0;
+  const isBelowMinOrderAmount = cartTotalPrice < minOrderAmount;
   const selectedPartner = useMemo(
     () => partners.find((partner) => partner.id === selectedPartnerId) ?? null,
     [partners, selectedPartnerId],
   );
+  const selectedOrderTypeSupported = supportedOrderTypes.includes(orderType);
+
+  useEffect(() => {
+    if (!selectedOrderTypeSupported) {
+      setOrderType(supportedOrderTypes[0]);
+    }
+  }, [orderType, selectedOrderTypeSupported, supportedOrderTypes]);
 
   const isDark = computedColorScheme === "dark";
   const pageBg = isDark ? "#111318" : "#f3f4f6";
@@ -158,9 +182,32 @@ export function CheckoutPage() {
   }
 
   async function handleSubmitOrder() {
-    const partnerId = orderType === "partners" ? selectedPartnerId : undefined;
+    if (!selectedOrderTypeSupported) {
+      showAppNotification({
+        title: t("checkout.submitErrorTitle"),
+        message: t("common.unknownError"),
+        color: "red",
+        icon: <IconX size={18} />,
+      });
+      return;
+    }
 
-    if (orderType === "partners" && !partnerId) {
+    if (isBelowMinOrderAmount) {
+      showAppNotification({
+        title: t("checkout.submitErrorTitle"),
+        message: t("checkout.minOrderAmountError", {
+          amount: formatPrice(minOrderAmount),
+        }),
+        color: "red",
+        icon: <IconInfoCircle size={18} />,
+      });
+      return;
+    }
+
+    const partnerId =
+      orderType === "delivery-to-organization" ? selectedPartnerId : undefined;
+
+    if (orderType === "delivery-to-organization" && !partnerId) {
       showAppNotification({
         title: t("checkout.missingPartner"),
         color: "red",
@@ -169,7 +216,7 @@ export function CheckoutPage() {
       return;
     }
 
-    if (orderType === "myself" && !deliveryAddress.trim()) {
+    if (orderType === "delivery-anywhere" && !deliveryAddress.trim()) {
       showAppNotification({
         title: t("checkout.validationAddress"),
         color: "red",
@@ -189,7 +236,7 @@ export function CheckoutPage() {
 
     const orderPayload: CreateOrderPayload = {
       company_id: companyId,
-      delivery_address: orderType === "myself" ? deliveryAddress.trim() : "",
+      delivery_address: orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
       user_id: telegramUser.TgID,
       payment_type: paymentType,
       comment: comment.trim() || undefined,
@@ -471,64 +518,69 @@ export function CheckoutPage() {
                     </Title>
 
                     <Group grow>
-                      <Paper
-                        component="button"
-                        type="button"
-                        radius={18}
-                        p="md"
-                        onClick={() => {
-                          setOrderType("partners");
-                          setPartnerView("map");
-                          openPartners();
-                        }}
-                        style={{
-                          cursor: "pointer",
-                          textAlign: "left",
-                          background: orderType === "partners" ? mutedBg : surfaceBg,
-                          border:
-                            orderType === "partners"
-                              ? `1px solid ${brandColor}`
-                              : cardBorder,
-                        }}
-                      >
-                        <Stack gap={4}>
-                          <Text fw={800} c={titleColor}>
-                            {t("checkout.orderTypePartners")}
-                          </Text>
-                          <Text size="sm" c={textColor}>
-                            {t("checkout.orderTypePartnersHint")}
-                          </Text>
-                        </Stack>
-                      </Paper>
+                      {supportedOrderTypes.includes("delivery-to-organization") ? (
+                        <Paper
+                          component="button"
+                          type="button"
+                          radius={18}
+                          p="md"
+                          onClick={() => {
+                            setOrderType("delivery-to-organization");
+                            setPartnerView("map");
+                            openPartners();
+                          }}
+                          style={{
+                            cursor: "pointer",
+                            textAlign: "left",
+                            background:
+                              orderType === "delivery-to-organization" ? mutedBg : surfaceBg,
+                            border:
+                              orderType === "delivery-to-organization"
+                                ? `1px solid ${brandColor}`
+                                : cardBorder,
+                          }}
+                        >
+                          <Stack gap={4}>
+                            <Text fw={800} c={titleColor}>
+                              {t("checkout.orderTypePartners")}
+                            </Text>
+                            <Text size="sm" c={textColor}>
+                              {t("checkout.orderTypePartnersHint")}
+                            </Text>
+                          </Stack>
+                        </Paper>
+                      ) : null}
 
-                      <Paper
-                        component="button"
-                        type="button"
-                        radius={18}
-                        p="md"
-                        onClick={() => setOrderType("myself")}
-                        style={{
-                          cursor: "pointer",
-                          textAlign: "left",
-                          background: orderType === "myself" ? mutedBg : surfaceBg,
-                          border:
-                            orderType === "myself"
-                              ? `1px solid ${brandColor}`
-                              : cardBorder,
-                        }}
-                      >
-                        <Stack gap={4}>
-                          <Text fw={800} c={titleColor}>
-                            {t("checkout.orderTypeMyself")}
-                          </Text>
-                          <Text size="sm" c={textColor}>
-                            {t("checkout.orderTypeMyselfHint")}
-                          </Text>
-                        </Stack>
-                      </Paper>
+                      {supportedOrderTypes.includes("delivery-anywhere") ? (
+                        <Paper
+                          component="button"
+                          type="button"
+                          radius={18}
+                          p="md"
+                          onClick={() => setOrderType("delivery-anywhere")}
+                          style={{
+                            cursor: "pointer",
+                            textAlign: "left",
+                            background: orderType === "delivery-anywhere" ? mutedBg : surfaceBg,
+                            border:
+                              orderType === "delivery-anywhere"
+                                ? `1px solid ${brandColor}`
+                                : cardBorder,
+                          }}
+                        >
+                          <Stack gap={4}>
+                            <Text fw={800} c={titleColor}>
+                              {t("checkout.orderTypeMyself")}
+                            </Text>
+                            <Text size="sm" c={textColor}>
+                              {t("checkout.orderTypeMyselfHint")}
+                            </Text>
+                          </Stack>
+                        </Paper>
+                      ) : null}
                     </Group>
 
-                    {orderType === "partners" ? (
+                    {orderType === "delivery-to-organization" ? (
                       <Paper
                         radius={16}
                         p="md"
@@ -562,7 +614,7 @@ export function CheckoutPage() {
                       </Paper>
                     ) : null}
 
-                    {orderType === "myself" ? (
+                    {orderType === "delivery-anywhere" ? (
                       <DeliveryAddressPicker
                         value={deliveryAddress}
                         onChange={setDeliveryAddress}
@@ -755,13 +807,21 @@ export function CheckoutPage() {
                       </Text>
                     </Group>
 
+                    {minOrderAmount > 0 ? (
+                      <Text size="sm" c={isBelowMinOrderAmount ? "red.6" : textColor}>
+                        {t("checkout.minOrderAmountHint", {
+                          amount: formatPrice(minOrderAmount),
+                        })}
+                      </Text>
+                    ) : null}
+
                     <Button
                       size="md"
                       radius="xl"
                       color={brandColor}
                       onClick={handleSubmitOrder}
                       loading={createOrderMutation.isPending}
-                      disabled={createOrderMutation.isPending}
+                      disabled={createOrderMutation.isPending || isBelowMinOrderAmount}
                       styles={{
                         root: {
                           height: 50,
