@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Group,
-  Paper,
-  ScrollArea,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Box, Paper, Stack, Text } from "@mantine/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
@@ -91,11 +83,11 @@ function getPartnerAddress(partner: Partner) {
   return partner.address_description ?? partner.addressDescription ?? "";
 }
 
-function getPartnerSubtitle(partner: Partner) {
-  return (
-    getPartnerAddress(partner) || partner.phone || partner.phone_number || ""
-  );
-}
+// function getPartnerSubtitle(partner: Partner) {
+//   return (
+//     getPartnerAddress(partner) || partner.phone || partner.phone_number || ""
+//   );
+// }
 
 function getPartnerMapDescription(partner: Partner) {
   return (
