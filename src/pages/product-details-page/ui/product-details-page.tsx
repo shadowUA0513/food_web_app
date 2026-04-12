@@ -10,12 +10,18 @@
   Title,
   useComputedColorScheme,
 } from "@mantine/core";
-import { IconArrowLeft, IconCheck, IconMinus, IconPlus } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconCheck,
+  IconMinus,
+  IconPlus,
+} from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { useCompanyMenu } from "../../../service/menu";
+import { useCompanySettings } from "../../../service/settings";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import { showAppNotification } from "../../../shared/lib/notifications";
 import { ProductImage } from "../../../shared/lib/product-image";
@@ -25,6 +31,7 @@ import {
   getCompanyId,
   getDiscountedPrice,
   getProductDiscount,
+  isCompanyOpen,
 } from "../../../widgets/home-screen/ui/home-utils";
 
 export function ProductDetailsPage() {
@@ -39,10 +46,11 @@ export function ProductDetailsPage() {
   const companyId = getCompanyId();
   const {
     data: categories = [],
-    isLoading,
-    isError,
-    error,
+    isLoading: menuLoading,
+    isError: menuError,
+    error: menuErrorObj,
   } = useCompanyMenu(companyId);
+  const { data: companySettings } = useCompanySettings(companyId);
 
   const allProducts = useMemo(
     () => categories.flatMap(({ products }) => products),
@@ -114,7 +122,10 @@ export function ProductDetailsPage() {
     showAppNotification({
       title: t("cart.addedTitle"),
       message: t("cart.addedMessage", {
-        product: getLocalizedValue(activeProduct.name_uz, activeProduct.name_ru),
+        product: getLocalizedValue(
+          activeProduct.name_uz,
+          activeProduct.name_ru,
+        ),
       }),
       icon: <IconCheck size={16} />,
     });
@@ -152,7 +163,7 @@ export function ProductDetailsPage() {
               </Group>
             </Paper>
 
-            {isLoading ? (
+            {menuLoading ? (
               <Paper radius={20} p="lg" style={{ background: surfaceBg }}>
                 <Group justify="center">
                   <Loader color={brandColor} />
@@ -160,18 +171,31 @@ export function ProductDetailsPage() {
               </Paper>
             ) : null}
 
-            {isError ? (
+            {companySettings && !isCompanyOpen(companySettings) ? (
+              <Paper radius={20} p="lg" style={{ background: surfaceBg }}>
+                <Text fw={800} c={titleColor}>
+                  {t("menu.closedTitle")}
+                </Text>
+                <Text size="sm" c={textColor} mt={4}>
+                  {t("menu.closedDescription")}
+                </Text>
+              </Paper>
+            ) : null}
+
+            {menuError ? (
               <Paper radius={20} p="lg" style={{ background: surfaceBg }}>
                 <Text fw={800} c="red.7">
                   {t("product.loadError")}
                 </Text>
                 <Text size="sm" c="red.6" mt={4}>
-                  {error instanceof Error ? error.message : t("common.unknownError")}
+                  {menuErrorObj instanceof Error
+                    ? menuErrorObj.message
+                    : t("common.unknownError")}
                 </Text>
               </Paper>
             ) : null}
 
-            {!isLoading && !isError && activeProduct ? (
+            {!menuLoading && !menuError && activeProduct ? (
               <>
                 <Paper
                   radius={18}
@@ -203,7 +227,8 @@ export function ProductDetailsPage() {
                     )}
                   </Title>
                   <Text mb="sm" c={textColor}>
-                    {activeProduct.description || t("menu.productFallbackDescription")}
+                    {activeProduct.description ||
+                      t("menu.productFallbackDescription")}
                   </Text>
 
                   <Paper
@@ -236,7 +261,11 @@ export function ProductDetailsPage() {
                           </Text>
                         </Group>
                       ) : null}
-                      <Text fw={900} fz="1.4rem" c={discount > 0 ? brandColor : titleColor}>
+                      <Text
+                        fw={900}
+                        fz="1.4rem"
+                        c={discount > 0 ? brandColor : titleColor}
+                      >
                         {formatPrice(discountedPrice)}
                       </Text>
                     </Stack>
@@ -290,7 +319,6 @@ export function ProductDetailsPage() {
                       {t("product.inCart", { count: activeProductCartCount })}
                     </Text>
                   ) : null}
-
                 </Stack>
 
                 <Box
@@ -300,7 +328,8 @@ export function ProductDetailsPage() {
                     right: 0,
                     bottom: 0,
                     zIndex: 220,
-                    padding: "0 12px calc(10px + env(safe-area-inset-bottom)) 12px",
+                    padding:
+                      "0 12px calc(10px + env(safe-area-inset-bottom)) 12px",
                     display: "flex",
                     justifyContent: "center",
                     pointerEvents: "none",
@@ -336,17 +365,27 @@ export function ProductDetailsPage() {
                         px="lg"
                         py="sm"
                         onClick={submitSelection}
-                        disabled={!activeProduct.is_available}
+                        disabled={
+                          !activeProduct.is_available ||
+                          !companySettings ||
+                          !isCompanyOpen(companySettings)
+                        }
                         style={{
-                          cursor: activeProduct.is_available
-                            ? "pointer"
-                            : "not-allowed",
+                          cursor:
+                            activeProduct.is_available &&
+                            companySettings &&
+                            isCompanyOpen(companySettings)
+                              ? "pointer"
+                              : "not-allowed",
                           border: "none",
                           color: "#ffffff",
                           fontWeight: 800,
-                          background: activeProduct.is_available
-                            ? `linear-gradient(135deg, ${brandScale[3]} 0%, ${brandColor} 100%)`
-                            : "#a7abb3",
+                          background:
+                            activeProduct.is_available &&
+                            companySettings &&
+                            isCompanyOpen(companySettings)
+                              ? `linear-gradient(135deg, ${brandScale[3]} 0%, ${brandColor} 100%)`
+                              : "#a7abb3",
                         }}
                       >
                         {t("product.addToCart")}
@@ -357,7 +396,7 @@ export function ProductDetailsPage() {
               </>
             ) : null}
 
-            {!isLoading && !isError && !activeProduct ? (
+            {!menuLoading && !menuError && !activeProduct ? (
               <Paper radius={20} p="lg" style={{ background: surfaceBg }}>
                 <Text fw={800} c={titleColor}>
                   {t("product.notFoundTitle")}

@@ -57,6 +57,8 @@ export function getDiscountedPrice(product: PriceWithDiscount) {
   return discountedPrice;
 }
 
+import type { CompanySettings } from "../../../types/settings";
+
 function getQueryParam(key: string) {
   const url = new URL(window.location.href);
   const searchValue = url.searchParams.get(key);
@@ -70,3 +72,30 @@ function getQueryParam(key: string) {
 
   return hashParams.get(key);
 }
+
+export function isCompanyOpen(settings?: CompanySettings): boolean {
+  const wh = settings?.today_working_hours;
+  if (!wh || !wh.is_active) {
+    return false;
+  }
+
+  // Check if today matches day_of_week (0=Sun, 1=Mon, ..., 6=Sat)
+  const now = new Date();
+  const currentDayOfWeek = now.getDay(); // 0=Sun, 6=Sat
+  if (currentDayOfWeek !== wh.day_of_week) {
+    return false;
+  }
+
+  // Parse times "HH:mm:ss" -> ms
+  const [startH, startM] = wh.start_time.split(':').map(Number);
+  const [endH, endM] = wh.end_time.split(':').map(Number);
+
+  const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM, 0).getTime();
+  const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM, 0).getTime();
+
+  const nowTime = now.getTime();
+
+  return nowTime >= startTime && nowTime <= endTime;
+}
+
+

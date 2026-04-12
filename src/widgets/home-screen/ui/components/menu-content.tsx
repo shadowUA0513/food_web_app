@@ -22,6 +22,7 @@ import { ProductImage } from "../../../../shared/lib/product-image";
 import type { MenuCategoryWithProducts, Product } from "../../../../types/menu";
 import type { CompanySettings } from "../../../../types/settings";
 import type { Locale } from "../home-screen-types";
+import { isCompanyOpen } from "../home-utils";
 
 interface MenuContentProps {
   locale: Locale;
@@ -87,7 +88,9 @@ export function MenuContent({
     setActiveCategoryId((current) => {
       if (
         current &&
-        visibleCategoriesWithProducts.some(({ category }) => category.id === current)
+        visibleCategoriesWithProducts.some(
+          ({ category }) => category.id === current,
+        )
       ) {
         return current;
       }
@@ -234,6 +237,25 @@ export function MenuContent({
           </Box>
         ) : null}
 
+        <Paper
+          radius={24}
+          p="md"
+          style={{
+            background: surfaceBg,
+            border: `2px solid ${brandColor}`,
+            boxShadow: isDark
+              ? "0 10px 28px rgba(0, 0, 0, 0.2)"
+              : "0 10px 28px rgba(15, 23, 42, 0.05)",
+          }}
+        >
+          <Text size="sm" fw={700} c={titleColor}>
+            {t("product.closed")}
+          </Text>
+          <Text size="xs" c={textColor} mt={2}>
+            {t("product.closedDescription")}
+          </Text>
+        </Paper>
+
         {isLoading ? (
           <Center py="xl">
             <Loader color={brandColor} />
@@ -372,23 +394,34 @@ export function MenuContent({
                         radius="xl"
                         variant={product.is_available ? "filled" : "light"}
                         color={brandColor}
-                        disabled={!product.is_available}
+                        disabled={
+                          !product.is_available ||
+                          !settings ||
+                          !isCompanyOpen(settings)
+                        }
                         aria-label={t("product.addToCart")}
                         onClick={(event) => {
                           event.stopPropagation();
 
-                          if (!product.is_available) {
+                          if (
+                            !product.is_available ||
+                            !settings ||
+                            !isCompanyOpen(settings)
+                          ) {
                             return;
                           }
 
                           onAddToCart(product);
                         }}
                         style={{
-                          boxShadow: product.is_available
-                            ? isDark
-                              ? `0 10px 18px ${hexToRgba(brandColor, 0.28)}`
-                              : `0 10px 18px ${hexToRgba(brandColor, 0.22)}`
-                            : "none",
+                          boxShadow:
+                            product.is_available &&
+                            settings &&
+                            isCompanyOpen(settings)
+                              ? isDark
+                                ? `0 10px 18px ${hexToRgba(brandColor, 0.28)}`
+                                : `0 10px 18px ${hexToRgba(brandColor, 0.22)}`
+                              : "none",
                           flexShrink: 0,
                         }}
                       >

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { api } from './api'
-import type { CompanySettings, CompanySettingsResponse } from '../types/settings'
+import type { CompanySettings, CompanySettingsResponse, WorkingHours } from '../types/settings'
 
 interface ApiErrorResponse {
   message?: string
@@ -41,6 +41,14 @@ function normalizeCompanySettings(raw: unknown): CompanySettings | null {
     logo_url: logoUrl,
     min_order_amount: minOrderAmount,
     supported_order_types: supportedOrderTypes,
+    today_working_hours: source.today_working_hours && typeof source.today_working_hours === 'object'
+      ? ({
+          day_of_week: Number((source.today_working_hours as Record<string, unknown>).day_of_week ?? 0),
+          start_time: String((source.today_working_hours as Record<string, unknown>).start_time ?? ''),
+          end_time: String((source.today_working_hours as Record<string, unknown>).end_time ?? ''),
+          is_active: Boolean((source.today_working_hours as Record<string, unknown>).is_active),
+        } as WorkingHours)
+      : null,
   }
 }
 

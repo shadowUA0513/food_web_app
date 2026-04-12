@@ -1,3 +1,10 @@
+export interface WorkingHours {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+}
+
 export interface CompanySettings {
   id: string
   name: string
@@ -5,6 +12,7 @@ export interface CompanySettings {
   logo_url: string
   min_order_amount?: number
   supported_order_types?: string[]
+  today_working_hours?: WorkingHours | null;
 }
 
 export interface CompanySettingsResponse {

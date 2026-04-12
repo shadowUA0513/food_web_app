@@ -83,12 +83,6 @@ function getPartnerAddress(partner: Partner) {
   return partner.address_description ?? partner.addressDescription ?? "";
 }
 
-// function getPartnerSubtitle(partner: Partner) {
-//   return (
-//     getPartnerAddress(partner) || partner.phone || partner.phone_number || ""
-//   );
-// }
-
 function getPartnerMapDescription(partner: Partner) {
   return (
     getPartnerAddress(partner) || partner.phone || partner.phone_number || ""

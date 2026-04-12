@@ -94,14 +94,18 @@ const resources = {
         loadError: "Menyuni yuklab bo'lmadi",
         emptyTitle: "Mahsulot topilmadi",
         emptyDescription: "Menyu yuklandi, lekin hozircha ko'rsatish uchun mahsulot yo'q.",
-        productFallbackDescription: "Yangi masalliqlar va tez yetkazib berish."
+        productFallbackDescription: "Yangi masalliqlar va tez yetkazib berish.",
+        closedTitle: "Kompaniya yopiq",
+        closedDescription: "Ish vaqti boshlanganda qayta ochiladi."
       },
       product: {
         title: "Mahsulot",
+
         loadError: "Mahsulotni yuklab bo'lmadi",
         quantity: "Miqdor",
         inCart: "Savatda: {{count}} dona",
-        closed: "Yopiq",
+        closed: "Kompaniya yopiq",
+        closedDescription: "Buyurtmalar faqat ish vaqtida qabul qilinadi",
         addToCart: "Savatga qo'shish",
         notFoundTitle: "Mahsulot topilmadi.",
         notFoundDescription: "Tanlangan mahsulot mavjud emas yoki hozircha ochiq emas."
@@ -203,14 +207,18 @@ const resources = {
         loadError: "Не удалось загрузить меню",
         emptyTitle: "Товары не найдены",
         emptyDescription: "Меню загружено, но сейчас нет товаров для отображения.",
-        productFallbackDescription: "Свежие ингредиенты и быстрая доставка."
+        productFallbackDescription: "Свежие ингредиенты и быстрая доставка.",
+        closedTitle: "Компания закрыта",
+        closedDescription: "Компания возобновит работу в рабочее время."
       },
       product: {
         title: "Товар",
+
         loadError: "Не удалось загрузить товар",
         quantity: "Количество",
         inCart: "Уже в корзине: {{count}}",
-        closed: "Закрыто",
+        closed: "Компания закрыта",
+        closedDescription: "Заказы принимаются только в рабочее время",
         addToCart: "В корзину",
         notFoundTitle: "Товар не найден.",
         notFoundDescription: "Выбранный товар не существует или сейчас недоступен."
