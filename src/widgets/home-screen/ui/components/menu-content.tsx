@@ -22,7 +22,13 @@ import { ProductImage } from "../../../../shared/lib/product-image";
 import type { MenuCategoryWithProducts, Product } from "../../../../types/menu";
 import type { CompanySettings } from "../../../../types/settings";
 import type { Locale } from "../home-screen-types";
-import { isCompanyOpen } from "../home-utils";
+import {
+  getCompanyId,
+  getDiscountedPrice,
+  getProductDiscount,
+  isCompanyOpen,
+} from "../home-utils";
+import { useCompanySettings } from "../../../../service/settings";
 
 interface MenuContentProps {
   locale: Locale;
@@ -63,10 +69,13 @@ export function MenuContent({
   formatPrice,
 }: MenuContentProps) {
   const { t } = useTranslation();
-  const { brandColor, brandScale } = useBrandTheme();
+  const { brandColor } = useBrandTheme();
   const headerHeight = 104;
   const headerOffset = 14;
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const companyId = getCompanyId();
+  const { data: companySettings } = useCompanySettings(companyId);
+
   const visibleCategoriesWithProducts = useMemo(
     () =>
       visibleCategories
@@ -237,24 +246,26 @@ export function MenuContent({
           </Box>
         ) : null}
 
-        <Paper
-          radius={24}
-          p="md"
-          style={{
-            background: surfaceBg,
-            border: `2px solid ${brandColor}`,
-            boxShadow: isDark
-              ? "0 10px 28px rgba(0, 0, 0, 0.2)"
-              : "0 10px 28px rgba(15, 23, 42, 0.05)",
-          }}
-        >
-          <Text size="sm" fw={700} c={titleColor}>
-            {t("product.closed")}
-          </Text>
-          <Text size="xs" c={textColor} mt={2}>
-            {t("product.closedDescription")}
-          </Text>
-        </Paper>
+        {!isCompanyOpen(companySettings) ? (
+          <Paper
+            radius={24}
+            p="md"
+            style={{
+              background: surfaceBg,
+              border: `2px solid ${brandColor}`,
+              boxShadow: isDark
+                ? "0 10px 28px rgba(0, 0, 0, 0.2)"
+                : "0 10px 28px rgba(15, 23, 42, 0.05)",
+            }}
+          >
+            <Text size="sm" fw={700} c={titleColor}>
+              {t("product.closed")}
+            </Text>
+            <Text size="xs" c={textColor} mt={2}>
+              {t("product.closedDescription")}
+            </Text>
+          </Paper>
+        ) : null}
 
         {isLoading ? (
           <Center py="xl">
@@ -299,138 +310,132 @@ export function MenuContent({
             </Group>
 
             <SimpleGrid cols={1} spacing={6} verticalSpacing={6}>
-              {products.map((product) => (
-                <Card
-                  key={product.id}
-                  onClick={() => onOpenProduct(product)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onOpenProduct(product);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  p={8}
-                  style={{
-                    cursor: "pointer",
-                    textAlign: "left",
-                    borderBottom: isDark
-                      ? "1px solid rgba(255,255,255,0.06)"
-                      : "1px solid #e7e8ec",
-                    borderRadius: "0",
-                    background: isDark ? "#111318" : "#ffffff",
-                  }}
-                >
-                  <Group justify="center" align="center" gap="sm" wrap="nowrap">
-                    <Box
-                      style={{
-                        width: 76,
-                        minWidth: 76,
-                        height: 76,
-                        borderRadius: 999,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: mutedBg,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <ProductImage
-                        src={product.image_url}
-                        alt={getLocalizedValue(
-                          product.name_uz,
-                          product.name_ru,
-                        )}
-                        h={76}
-                        fit="contain"
-                        background={`linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 100%), linear-gradient(135deg, ${brandScale[2]} 0%, ${brandColor} 48%, ${brandScale[7]} 100%)`}
-                      />
-                    </Box>
+              {products.map((product) => {
+                const discount = getProductDiscount(product);
+                const discountedPrice = getDiscountedPrice(product);
 
-                    <Group
-                      ml="4px"
-                      justify="space-between"
-                      align="center"
-                      gap="sm"
-                      wrap="nowrap"
-                      style={{ flex: 1 }}
-                    >
-                      <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
-                        <Text
-                          fw={800}
-                          fz="0.9rem"
-                          lh={1.15}
-                          c={titleColor}
-                          lineClamp={1}
-                        >
-                          {getLocalizedValue(product.name_uz, product.name_ru)}
-                        </Text>
-
+                return (
+                  <Card
+                    key={product.id}
+                    onClick={() => onOpenProduct(product)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onOpenProduct(product);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    p={8}
+                    style={{
+                      cursor: "pointer",
+                      textAlign: "left",
+                      borderBottom: isDark
+                        ? "1px solid rgba(255,255,255,0.06)"
+                        : "1px solid #e7e8ec",
+                      borderRadius: 0,
+                      background: isDark ? "#111318" : "#ffffff",
+                    }}
+                  >
+                    <Group justify="space-between" align="center" wrap="nowrap">
+                      {/* LEFT SIDE */}
+                      <Group gap="sm" wrap="nowrap" style={{ flex: 1 }}>
+                        {/* IMAGE */}
                         <Box
-                          px="sm"
-                          py={5}
-                          mt="4px"
                           style={{
-                            width: "fit-content",
-                            maxWidth: "100%",
-                            borderRadius: 999,
-                            background: isDark
-                              ? "rgba(255,255,255,0.08)"
-                              : "#f3f4f6",
-                            boxShadow: isDark
-                              ? "inset 0 0 0 1px rgba(255,255,255,0.04)"
-                              : "inset 0 0 0 1px rgba(15,23,42,0.04)",
+                            width: 64,
+                            height: 64,
+                            borderRadius: 12,
+                            overflow: "hidden",
+                            background: mutedBg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          <Text fw={900} fz="0.94rem" c={titleColor} lh={1}>
-                            {formatPrice(product.price)}
-                          </Text>
+                          <ProductImage
+                            src={product.image_url}
+                            alt={getLocalizedValue(
+                              product.name_uz,
+                              product.name_ru,
+                            )}
+                            h={60}
+                            fit="contain"
+                          />
                         </Box>
-                      </Stack>
 
+                        {/* TEXT + PRICE */}
+                        <Stack gap={4} style={{ flex: 1 }}>
+                          <Text fw={700} fz="sm" lineClamp={1} c={titleColor}>
+                            {getLocalizedValue(
+                              product.name_uz,
+                              product.name_ru,
+                            )}
+                          </Text>
+                          {/* 💰 PRICE BLOCK */}
+                          <Stack gap={2}>
+                            {/* 🟢 TOP ROW: NEW PRICE + DISCOUNT */}
+                            <Group
+                              w={"125px"}
+                              justify="space-between"
+                              align="center"
+                            >
+                              <Text fw={900} fz="md" c={titleColor}>
+                                {formatPrice(discountedPrice)}
+                              </Text>
+
+                              {discount > 0 && (
+                                <Text
+                                  size="xs"
+                                  fw={800}
+                                  c="red"
+                                  style={{ whiteSpace: "nowrap" }}
+                                >
+                                  -{discount}%
+                                </Text>
+                              )}
+                            </Group>
+
+                            {/* ⚪ OLD PRICE */}
+                            {discount > 0 && (
+                              <Text size="xs" c="dimmed" td="line-through">
+                                {formatPrice(product.price)}
+                              </Text>
+                            )}
+                          </Stack>{" "}
+                        </Stack>
+                      </Group>
+
+                      {/* RIGHT SIDE BUTTON */}
                       <ActionIcon
                         size={34}
                         radius="xl"
                         variant={product.is_available ? "filled" : "light"}
                         color={brandColor}
-                        disabled={
-                          !product.is_available ||
-                          !settings ||
-                          !isCompanyOpen(settings)
-                        }
+                        disabled={!product.is_available}
                         aria-label={t("product.addToCart")}
                         onClick={(event) => {
                           event.stopPropagation();
 
-                          if (
-                            !product.is_available ||
-                            !settings ||
-                            !isCompanyOpen(settings)
-                          ) {
-                            return;
-                          }
+                          if (!product.is_available) return;
 
                           onAddToCart(product);
                         }}
                         style={{
-                          boxShadow:
-                            product.is_available &&
-                            settings &&
-                            isCompanyOpen(settings)
-                              ? isDark
-                                ? `0 10px 18px ${hexToRgba(brandColor, 0.28)}`
-                                : `0 10px 18px ${hexToRgba(brandColor, 0.22)}`
-                              : "none",
+                          boxShadow: product.is_available
+                            ? isDark
+                              ? `0 10px 18px ${hexToRgba(brandColor, 0.28)}`
+                              : `0 10px 18px ${hexToRgba(brandColor, 0.22)}`
+                            : "none",
                           flexShrink: 0,
                         }}
                       >
-                        <IconShoppingBagPlus size={17} />
+                        <IconShoppingBagPlus size={16} />
                       </ActionIcon>
                     </Group>
-                  </Group>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </SimpleGrid>
           </Stack>
         ))}
