@@ -9,7 +9,23 @@ export interface CompanySettings {
 
 export interface CompanySettingsResponse {
   error: boolean
-  data: {
-    company_settings: CompanySettings
-  }
+  data?: {
+    company_settings?: Partial<CompanySettings> & {
+      company_name?: string
+      logo?: string
+      logoUrl?: string
+      brandColor?: string
+    }
+    settings?: Partial<CompanySettings> & {
+      company_name?: string
+      logo?: string
+      logoUrl?: string
+      brandColor?: string
+    }
+  } & (Partial<CompanySettings> & {
+    company_name?: string
+    logo?: string
+    logoUrl?: string
+    brandColor?: string
+  })
 }

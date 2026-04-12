@@ -14,7 +14,12 @@ import { CartDrawer } from "./components/cart-drawer";
 import { FloatingCartButton } from "./components/floating-cart-button";
 import { MenuContent } from "./components/menu-content";
 import { SettingsDrawer } from "./components/settings-drawer";
-import { formatPrice, getCompanyId, getTelegramId } from "./home-utils";
+import {
+  formatPrice,
+  getCompanyId,
+  getDiscountedPrice,
+  getTelegramId,
+} from "./home-utils";
 import type { Locale } from "./home-screen-types";
 
 export function HomeScreen() {
@@ -50,7 +55,11 @@ export function HomeScreen() {
 
   const cartList = useMemo(() => Object.values(cartItems), [cartItems]);
   const cartTotalPrice = useMemo(
-    () => cartList.reduce((sum, item) => sum + item.product.price * item.count, 0),
+    () =>
+      cartList.reduce(
+        (sum, item) => sum + getDiscountedPrice(item.product) * item.count,
+        0,
+      ),
     [cartList],
   );
 

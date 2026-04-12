@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { api } from './api'
-import type { CompanySettingsResponse } from '../types/settings'
+import type { CompanySettings, CompanySettingsResponse } from '../types/settings'
 
 interface ApiErrorResponse {
   message?: string
@@ -12,13 +12,49 @@ function getErrorMessage(error: unknown, fallback: string) {
   return axiosError.response?.data?.message ?? fallback
 }
 
+function normalizeCompanySettings(raw: unknown): CompanySettings | null {
+  if (!raw || typeof raw !== 'object') {
+    return null
+  }
+
+  const source = raw as Record<string, unknown>
+  const id = String(source.id ?? '')
+  const name = String(source.name ?? source.company_name ?? '')
+  const brandColor = String(source.brand_color ?? source.brandColor ?? '')
+  const logoUrl = String(source.logo_url ?? source.logo ?? source.logoUrl ?? '')
+  const minOrderAmount =
+    typeof source.min_order_amount === 'number' ? source.min_order_amount : undefined
+  const supportedOrderTypes = Array.isArray(source.supported_order_types)
+    ? source.supported_order_types.filter(
+        (value): value is string => typeof value === 'string',
+      )
+    : undefined
+
+  if (!name && !logoUrl && !brandColor) {
+    return null
+  }
+
+  return {
+    id,
+    name,
+    brand_color: brandColor,
+    logo_url: logoUrl,
+    min_order_amount: minOrderAmount,
+    supported_order_types: supportedOrderTypes,
+  }
+}
+
 export async function getCompanySettings(companyId: string) {
   try {
     const { data } = await api.get<CompanySettingsResponse>(
       `/api/v1/twa/company/${companyId}/settings`,
     )
 
-    const companySettings = data.data?.company_settings
+    const companySettings =
+      normalizeCompanySettings(data.data?.company_settings) ??
+      normalizeCompanySettings(data.data?.settings) ??
+      normalizeCompanySettings(data.data) ??
+      normalizeCompanySettings(data)
 
     if (!companySettings) {
       throw new Error('Company settings not found.')

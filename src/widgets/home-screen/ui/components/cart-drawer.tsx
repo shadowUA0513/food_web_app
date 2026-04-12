@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
 import { ProductImage } from "../../../../shared/lib/product-image";
 import type { CartItem } from "../../../../shared/store/cart-store";
+import { getDiscountedPrice } from "../home-utils";
 
 interface CartDrawerProps {
   opened: boolean;
@@ -137,7 +138,7 @@ export function CartDrawer({
                       </Group>
                     </Stack>
                     <Text fw={800} c={titleColor}>
-                      {formatPrice(product.price * count)}
+                      {formatPrice(getDiscountedPrice(product) * count)}
                     </Text>
                   </Group>
                 </Paper>

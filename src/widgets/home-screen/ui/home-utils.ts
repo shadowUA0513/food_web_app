@@ -1,3 +1,8 @@
+interface PriceWithDiscount {
+  price: number;
+  discounted_price?: number | null;
+}
+
 export function getCompanyId() {
   return (
     getQueryParam("company_id") ??
@@ -16,6 +21,40 @@ export function getTelegramId() {
 
 export function formatPrice(price: number) {
   return `${new Intl.NumberFormat("ru-RU").format(price)} UZS`;
+}
+
+export function getProductDiscount(product: PriceWithDiscount) {
+  const originalPrice = Number(product.price);
+  const discountedPrice = Number(product.discounted_price ?? 0);
+
+  if (
+    !Number.isFinite(originalPrice) ||
+    originalPrice <= 0 ||
+    !Number.isFinite(discountedPrice) ||
+    discountedPrice <= 0 ||
+    discountedPrice >= originalPrice
+  ) {
+    return 0;
+  }
+
+  return Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+}
+
+export function getDiscountedPrice(product: PriceWithDiscount) {
+  const originalPrice = Number(product.price);
+  const discountedPrice = Number(product.discounted_price ?? 0);
+
+  if (
+    !Number.isFinite(originalPrice) ||
+    originalPrice <= 0 ||
+    !Number.isFinite(discountedPrice) ||
+    discountedPrice <= 0 ||
+    discountedPrice >= originalPrice
+  ) {
+    return product.price;
+  }
+
+  return discountedPrice;
 }
 
 function getQueryParam(key: string) {

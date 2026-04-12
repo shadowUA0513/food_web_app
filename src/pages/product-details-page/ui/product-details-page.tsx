@@ -20,7 +20,12 @@ import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import { showAppNotification } from "../../../shared/lib/notifications";
 import { ProductImage } from "../../../shared/lib/product-image";
 import { useCartStore } from "../../../shared/store/cart-store";
-import { formatPrice, getCompanyId } from "../../../widgets/home-screen/ui/home-utils";
+import {
+  formatPrice,
+  getCompanyId,
+  getDiscountedPrice,
+  getProductDiscount,
+} from "../../../widgets/home-screen/ui/home-utils";
 
 export function ProductDetailsPage() {
   const { t, i18n } = useTranslation();
@@ -61,6 +66,8 @@ export function ProductDetailsPage() {
   const activeProductCartCount = activeProduct
     ? (cartItems[activeProduct.id]?.count ?? 0)
     : 0;
+  const discount = activeProduct ? getProductDiscount(activeProduct) : 0;
+  const discountedPrice = activeProduct ? getDiscountedPrice(activeProduct) : 0;
 
   const isDark = computedColorScheme === "dark";
   const pageBg = isDark ? "#111318" : "#f3f4f6";
@@ -201,6 +208,42 @@ export function ProductDetailsPage() {
 
                   <Paper
                     radius="xl"
+                    p="md"
+                    style={{
+                      background: surfaceBg,
+                      border: cardBorder,
+                    }}
+                  >
+                    <Stack gap={4}>
+                      {discount > 0 ? (
+                        <Group gap="xs" wrap="wrap" align="center">
+                          <Box
+                            px={10}
+                            py={5}
+                            style={{
+                              borderRadius: 999,
+                              background: brandColor,
+                              color: "#ffffff",
+                              fontSize: "0.72rem",
+                              fontWeight: 900,
+                              lineHeight: 1,
+                            }}
+                          >
+                            -{discount}%
+                          </Box>
+                          <Text size="sm" c={textColor} td="line-through">
+                            {formatPrice(activeProduct.price)}
+                          </Text>
+                        </Group>
+                      ) : null}
+                      <Text fw={900} fz="1.4rem" c={discount > 0 ? brandColor : titleColor}>
+                        {formatPrice(discountedPrice)}
+                      </Text>
+                    </Stack>
+                  </Paper>
+
+                  <Paper
+                    radius="xl"
                     p="xs"
                     style={{
                       background: surfaceBg,
@@ -283,7 +326,7 @@ export function ProductDetailsPage() {
                           {t("cart.total")}
                         </Text>
                         <Text fw={900} fz="1.1rem" c={titleColor}>
-                          {formatPrice(activeProduct.price * count)}
+                          {formatPrice(discountedPrice * count)}
                         </Text>
                       </Stack>
                       <Paper

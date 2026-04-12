@@ -6,6 +6,7 @@ export interface Product {
   name_ru: string
   description: string
   price: number
+  discounted_price?: number | null
   image_url: string
   stock_quantity: number
   is_available: boolean

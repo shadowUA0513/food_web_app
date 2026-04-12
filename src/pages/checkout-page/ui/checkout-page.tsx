@@ -41,6 +41,7 @@ import { SettingsDrawer } from "../../../widgets/home-screen/ui/components/setti
 import {
   formatPrice,
   getCompanyId,
+  getDiscountedPrice,
   getPartnerId,
   getTelegramId,
 } from "../../../widgets/home-screen/ui/home-utils";
@@ -61,8 +62,10 @@ const DEFAULT_SUPPORTED_ORDER_TYPES: OrderType[] = [
 ];
 
 export function CheckoutPage() {
-  const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
-  const [partnersOpened, { open: openPartners, close: closePartners }] = useDisclosure(false);
+  const [settingsOpened, { open: openSettings, close: closeSettings }] =
+    useDisclosure(false);
+  const [partnersOpened, { open: openPartners, close: closePartners }] =
+    useDisclosure(false);
   const [partnerView, setPartnerView] = useState<"map" | "list">("map");
   const { t, i18n } = useTranslation();
   const { brandColor, brandScale } = useBrandTheme();
@@ -82,7 +85,9 @@ export function CheckoutPage() {
   const [orderType, setOrderType] = useState<OrderType>(
     initialPartnerId ? "delivery-to-organization" : "delivery-anywhere",
   );
-  const [selectedPartnerId, setSelectedPartnerId] = useState(initialPartnerId ?? "");
+  const [selectedPartnerId, setSelectedPartnerId] = useState(
+    initialPartnerId ?? "",
+  );
   const createOrderMutation = useCreateCompanyOrder();
   const { data: telegramUser } = useTelegramUser(telegramId);
   const {
@@ -95,7 +100,11 @@ export function CheckoutPage() {
   const locale: Locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
   const cartList = useMemo(() => Object.values(cartItems), [cartItems]);
   const cartTotalPrice = useMemo(
-    () => cartList.reduce((sum, item) => sum + item.product.price * item.count, 0),
+    () =>
+      cartList.reduce(
+        (sum, item) => sum + getDiscountedPrice(item.product) * item.count,
+        0,
+      ),
     [cartList],
   );
   const supportedOrderTypes = useMemo(() => {
@@ -104,7 +113,9 @@ export function CheckoutPage() {
         type === "delivery-to-organization" || type === "delivery-anywhere",
     );
 
-    return apiTypes && apiTypes.length > 0 ? apiTypes : DEFAULT_SUPPORTED_ORDER_TYPES;
+    return apiTypes && apiTypes.length > 0
+      ? apiTypes
+      : DEFAULT_SUPPORTED_ORDER_TYPES;
   }, [settings?.supported_order_types]);
   const minOrderAmount = settings?.min_order_amount ?? 0;
   const isBelowMinOrderAmount = cartTotalPrice < minOrderAmount;
@@ -236,14 +247,15 @@ export function CheckoutPage() {
 
     const orderPayload: CreateOrderPayload = {
       company_id: companyId,
-      delivery_address: orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
+      delivery_address:
+        orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
       user_id: telegramUser.TgID,
       payment_type: paymentType,
       comment: comment.trim() || undefined,
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,
         quantity: count,
-        price: product.price,
+        price: getDiscountedPrice(product),
       })),
     };
 
@@ -286,7 +298,9 @@ export function CheckoutPage() {
           void i18n.changeLanguage(nextLocale);
         }}
         isDark={isDark}
-        onToggleDarkMode={(enabled) => setColorScheme(enabled ? "dark" : "light")}
+        onToggleDarkMode={(enabled) =>
+          setColorScheme(enabled ? "dark" : "light")
+        }
         surfaceBg={surfaceBg}
         titleColor={titleColor}
         textColor={textColor}
@@ -491,39 +505,19 @@ export function CheckoutPage() {
                     border: cardBorder,
                   }}
                 >
-                  <Stack gap={4}>
-                    <Text size="sm" fw={700} c={brandColor}>
-                      {t("checkout.subtitle")}
-                    </Text>
-                    <Title order={2} c={titleColor}>
-                      {t("checkout.orderDetails")}
-                    </Title>
-                    <Text size="sm" c={textColor}>
-                      {t("checkout.description")}
-                    </Text>
-                  </Stack>
-                </Paper>
-
-                <Paper
-                  radius={20}
-                  p="lg"
-                  style={{
-                    background: surfaceBg,
-                    border: cardBorder,
-                  }}
-                >
                   <Stack gap="md">
                     <Title order={4} c={titleColor}>
                       {t("checkout.orderTypeTitle")}
                     </Title>
-
                     <Group grow>
-                      {supportedOrderTypes.includes("delivery-to-organization") ? (
+                      {supportedOrderTypes.includes(
+                        "delivery-to-organization",
+                      ) ? (
                         <Paper
                           component="button"
                           type="button"
                           radius={18}
-                          p="md"
+                          p="xs"
                           onClick={() => {
                             setOrderType("delivery-to-organization");
                             setPartnerView("map");
@@ -531,9 +525,11 @@ export function CheckoutPage() {
                           }}
                           style={{
                             cursor: "pointer",
-                            textAlign: "left",
+                            textAlign: "center",
                             background:
-                              orderType === "delivery-to-organization" ? mutedBg : surfaceBg,
+                              orderType === "delivery-to-organization"
+                                ? mutedBg
+                                : surfaceBg,
                             border:
                               orderType === "delivery-to-organization"
                                 ? `1px solid ${brandColor}`
@@ -543,9 +539,6 @@ export function CheckoutPage() {
                           <Stack gap={4}>
                             <Text fw={800} c={titleColor}>
                               {t("checkout.orderTypePartners")}
-                            </Text>
-                            <Text size="sm" c={textColor}>
-                              {t("checkout.orderTypePartnersHint")}
                             </Text>
                           </Stack>
                         </Paper>
@@ -561,7 +554,10 @@ export function CheckoutPage() {
                           style={{
                             cursor: "pointer",
                             textAlign: "left",
-                            background: orderType === "delivery-anywhere" ? mutedBg : surfaceBg,
+                            background:
+                              orderType === "delivery-anywhere"
+                                ? mutedBg
+                                : surfaceBg,
                             border:
                               orderType === "delivery-anywhere"
                                 ? `1px solid ${brandColor}`
@@ -569,17 +565,17 @@ export function CheckoutPage() {
                           }}
                         >
                           <Stack gap={4}>
-                            <Text fw={800} c={titleColor}>
+                            <Text
+                              style={{ textAlign: "center" }}
+                              fw={800}
+                              c={titleColor}
+                            >
                               {t("checkout.orderTypeMyself")}
-                            </Text>
-                            <Text size="sm" c={textColor}>
-                              {t("checkout.orderTypeMyselfHint")}
                             </Text>
                           </Stack>
                         </Paper>
                       ) : null}
                     </Group>
-
                     {orderType === "delivery-to-organization" ? (
                       <Paper
                         radius={16}
@@ -613,7 +609,6 @@ export function CheckoutPage() {
                         </Stack>
                       </Paper>
                     ) : null}
-
                     {orderType === "delivery-anywhere" ? (
                       <DeliveryAddressPicker
                         value={deliveryAddress}
@@ -721,7 +716,9 @@ export function CheckoutPage() {
                                   width: 10,
                                   height: 10,
                                   borderRadius: "50%",
-                                  background: active ? brandColor : "transparent",
+                                  background: active
+                                    ? brandColor
+                                    : "transparent",
                                   border: active
                                     ? `1px solid ${brandColor}`
                                     : isDark
@@ -755,7 +752,9 @@ export function CheckoutPage() {
                       minRows={3}
                       radius="md"
                       value={comment}
-                      onChange={(event) => setComment(event.currentTarget.value)}
+                      onChange={(event) =>
+                        setComment(event.currentTarget.value)
+                      }
                     />
                   </Stack>
                 </Paper>
@@ -774,17 +773,24 @@ export function CheckoutPage() {
                     </Title>
 
                     {cartList.map(({ product, count }) => (
-                      <Group key={product.id} justify="space-between" align="flex-start">
+                      <Group
+                        key={product.id}
+                        justify="space-between"
+                        align="flex-start"
+                      >
                         <Stack gap={2}>
                           <Text fw={700} c={titleColor}>
-                            {getLocalizedValue(product.name_uz, product.name_ru)}
+                            {getLocalizedValue(
+                              product.name_uz,
+                              product.name_ru,
+                            )}
                           </Text>
                           <Text size="sm" c={textColor}>
                             {t("checkout.itemCount", { count })}
                           </Text>
                         </Stack>
                         <Text fw={800} c={titleColor}>
-                          {formatPrice(product.price * count)}
+                          {formatPrice(getDiscountedPrice(product) * count)}
                         </Text>
                       </Group>
                     ))}
@@ -808,7 +814,10 @@ export function CheckoutPage() {
                     </Group>
 
                     {minOrderAmount > 0 ? (
-                      <Text size="sm" c={isBelowMinOrderAmount ? "red.6" : textColor}>
+                      <Text
+                        size="sm"
+                        c={isBelowMinOrderAmount ? "red.6" : textColor}
+                      >
                         {t("checkout.minOrderAmountHint", {
                           amount: formatPrice(minOrderAmount),
                         })}
@@ -821,7 +830,9 @@ export function CheckoutPage() {
                       color={brandColor}
                       onClick={handleSubmitOrder}
                       loading={createOrderMutation.isPending}
-                      disabled={createOrderMutation.isPending || isBelowMinOrderAmount}
+                      disabled={
+                        createOrderMutation.isPending || isBelowMinOrderAmount
+                      }
                       styles={{
                         root: {
                           height: 50,

@@ -92,15 +92,14 @@ function getPartnerAddress(partner: Partner) {
 }
 
 function getPartnerSubtitle(partner: Partner) {
-  return getPartnerAddress(partner) || partner.phone || partner.phone_number || "";
+  return (
+    getPartnerAddress(partner) || partner.phone || partner.phone_number || ""
+  );
 }
 
 function getPartnerMapDescription(partner: Partner) {
   return (
-    getPartnerAddress(partner) ||
-    partner.phone ||
-    partner.phone_number ||
-    ""
+    getPartnerAddress(partner) || partner.phone || partner.phone_number || ""
   );
 }
 
@@ -247,7 +246,13 @@ export function PartnerMapPicker({
       mapInstanceRef.current?.destroy();
       mapInstanceRef.current = null;
     };
-  }, [brandColor, onSelectPartner, partnersWithCoordinates, selectedPartnerId, t]);
+  }, [
+    brandColor,
+    onSelectPartner,
+    partnersWithCoordinates,
+    selectedPartnerId,
+    t,
+  ]);
 
   return (
     <Stack gap="md">
@@ -323,53 +328,6 @@ export function PartnerMapPicker({
           ) : null}
         </Paper>
       ) : null}
-
-      <ScrollArea offsetScrollbars scrollbarSize={4}>
-        <Group wrap="nowrap" gap="sm">
-          {partners.map((partner) => {
-            const active = partner.id === selectedPartnerId;
-
-            return (
-              <Paper
-                key={partner.id}
-                radius={20}
-                p="md"
-                style={{
-                  minWidth: 220,
-                  background: active ? mutedBg : surfaceBg,
-                  border: active
-                    ? `1px solid ${brandColor}`
-                    : isDark
-                      ? "1px solid rgba(255,255,255,0.08)"
-                      : "1px solid rgba(17,24,39,0.08)",
-                }}
-              >
-                <Stack gap="sm">
-                  <Stack gap={2}>
-                    <Text fw={800} c={titleColor}>
-                      {getPartnerLabel(partner, locale)}
-                    </Text>
-                    <Text size="xs" c={textColor}>
-                      {getPartnerSubtitle(partner)}
-                    </Text>
-                  </Stack>
-
-                  <Button
-                    radius="xl"
-                    color={active ? brandColor : "gray"}
-                    variant={active ? "filled" : "light"}
-                    onClick={() => onSelectPartner(partner.id)}
-                  >
-                    {active
-                      ? t("checkout.partnerSelectedAction")
-                      : t("checkout.choosePartner")}
-                  </Button>
-                </Stack>
-              </Paper>
-            );
-          })}
-        </Group>
-      </ScrollArea>
     </Stack>
   );
 }
