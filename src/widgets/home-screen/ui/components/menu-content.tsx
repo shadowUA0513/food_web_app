@@ -372,13 +372,13 @@ export function MenuContent({
                               product.name_ru,
                             )}
                           </Text>
-                          {/* 💰 PRICE BLOCK */}
                           <Stack gap={2}>
-                            {/* 🟢 TOP ROW: NEW PRICE + DISCOUNT */}
                             <Group
-                              w={"125px"}
-                              justify="space-between"
+                              gap="xs"
+                              justify="flex-start"
                               align="center"
+                              wrap="nowrap"
+                              style={{ width: "fit-content" }}
                             >
                               <Text fw={900} fz="md" c={titleColor}>
                                 {formatPrice(discountedPrice)}
@@ -402,7 +402,7 @@ export function MenuContent({
                                 {formatPrice(product.price)}
                               </Text>
                             )}
-                          </Stack>{" "}
+                          </Stack>
                         </Stack>
                       </Group>
 

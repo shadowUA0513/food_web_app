@@ -1,4 +1,8 @@
-﻿import { AppShell, useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
+﻿import {
+  AppShell,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconCheck } from "@tabler/icons-react";
 import { useMemo } from "react";
@@ -23,7 +27,8 @@ import {
 import type { Locale } from "./home-screen-types";
 
 export function HomeScreen() {
-  const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
+  const [settingsOpened, { open: openSettings, close: closeSettings }] =
+    useDisclosure(false);
   const { i18n, t } = useTranslation();
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
@@ -32,7 +37,10 @@ export function HomeScreen() {
 
   const companyId = getCompanyId();
   const telegramId = getTelegramId();
-  const { data: telegramUser } = useTelegramUser(telegramId, location.pathname === "/");
+  const { data: telegramUser } = useTelegramUser(
+    telegramId,
+    location.pathname === "/",
+  );
   const { data: settings } = useCompanySettings(companyId);
   const {
     data: categories = [],
@@ -125,7 +133,9 @@ export function HomeScreen() {
           void i18n.changeLanguage(nextLocale);
         }}
         isDark={isDark}
-        onToggleDarkMode={(enabled) => setColorScheme(enabled ? "dark" : "light")}
+        onToggleDarkMode={(enabled) =>
+          setColorScheme(enabled ? "dark" : "light")
+        }
         surfaceBg={surfaceBg}
         titleColor={titleColor}
         textColor={textColor}
