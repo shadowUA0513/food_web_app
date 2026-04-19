@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Drawer,
   Group,
   Paper,
@@ -7,6 +8,7 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
+import { IconChevronRight, IconHistory } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "../home-screen-types";
 
@@ -23,6 +25,7 @@ interface SettingsDrawerProps {
   mutedBg: string;
   userName?: string;
   userSubtitle?: string;
+  onOpenOrderHistory?: () => void;
 }
 
 export function SettingsDrawer({
@@ -36,6 +39,7 @@ export function SettingsDrawer({
   textColor,
   userName,
   userSubtitle,
+  onOpenOrderHistory,
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
   const drawerBg = isDark ? "#181b22" : "#f6f7fb";
@@ -212,6 +216,49 @@ export function SettingsDrawer({
                 },
               }}
             />
+          </Group>
+
+          <Group
+            justify="space-between"
+            align="center"
+            wrap="nowrap"
+            px={12}
+            py={10}
+            style={{
+              background: rowBg,
+              border: rowBorder,
+              borderRadius: 16,
+            }}
+          >
+            <Group gap={10} wrap="nowrap" style={{ minWidth: 0 }}>
+              <ActionIcon
+                size={34}
+                radius="xl"
+                variant="subtle"
+                color={isDark ? "gray" : "dark"}
+              >
+                <IconHistory size={18} />
+              </ActionIcon>
+              <Stack gap={4} style={{ minWidth: 0 }}>
+                <Text fw={800} fz="0.9rem" c={titleColor} lh={1.1}>
+                  {t("settings.orderHistory")}
+                </Text>
+                <Text mt="3px" fz="0.74rem" c={textColor} lh={1.1}>
+                  {t("settings.orderHistoryDescription")}
+                </Text>
+              </Stack>
+            </Group>
+
+            <ActionIcon
+              size={34}
+              radius="xl"
+              variant="light"
+              color="gray"
+              onClick={onOpenOrderHistory}
+              aria-label={t("settings.orderHistory")}
+            >
+              <IconChevronRight size={18} />
+            </ActionIcon>
           </Group>
         </Stack>
       </Paper>

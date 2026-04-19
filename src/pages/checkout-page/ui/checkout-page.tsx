@@ -192,6 +192,14 @@ export function CheckoutPage() {
     });
   }
 
+  function openOrderHistoryPage() {
+    closeSettings();
+    navigate({
+      pathname: "/order-history",
+      search: location.search,
+    });
+  }
+
   async function handleSubmitOrder() {
     if (!selectedOrderTypeSupported) {
       showAppNotification({
@@ -310,6 +318,7 @@ export function CheckoutPage() {
           telegramUser?.PhoneNumber ||
           (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
         }
+        onOpenOrderHistory={openOrderHistoryPage}
       />
 
       <Drawer

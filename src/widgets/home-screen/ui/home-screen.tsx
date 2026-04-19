@@ -112,6 +112,14 @@ export function HomeScreen() {
     });
   }
 
+  function openOrderHistoryPage() {
+    closeSettings();
+    navigate({
+      pathname: "/order-history",
+      search: location.search,
+    });
+  }
+
   function addProductToCart(product: Product) {
     addItem(product, 1);
     showAppNotification({
@@ -145,6 +153,7 @@ export function HomeScreen() {
           telegramUser?.PhoneNumber ||
           (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
         }
+        onOpenOrderHistory={openOrderHistoryPage}
       />
 
       <CartDrawer

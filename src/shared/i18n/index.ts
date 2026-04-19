@@ -9,7 +9,26 @@ const resources = {
         language: "Til",
         chooseLanguage: "Ilova tilini tanlang",
         darkMode: "Tungi rejim",
-        switchAppearance: "Ko'rinishni almashtirish"
+        switchAppearance: "Ko'rinishni almashtirish",
+        orderHistory: "Buyurtmalar tarixi",
+        orderHistoryDescription: "Oldingi buyurtmalarni ko'ring"
+      },
+      history: {
+        title: "Buyurtmalar tarixi",
+        order: "Buyurtma",
+        items: "Mahsulotlar",
+        item: "Mahsulot",
+        quantity: "Soni",
+        itemsCount: "Mahsulotlar soni",
+        paymentType: "To'lov turi",
+        deliveryAddress: "Yetkazish manzili",
+        total: "Jami",
+        loadError: "Buyurtmalar tarixini yuklab bo'lmadi",
+        emptyTitle: "Buyurtmalar hali yo'q",
+        emptyDescription: "Tasdiqlangan buyurtmalar shu yerda ko'rinadi.",
+        unknownDate: "Sana ko'rsatilmagan",
+        statusUnknown: "Noma'lum",
+        notSpecified: "Ko'rsatilmagan"
       },
       cart: {
         title: "Savat",
@@ -122,7 +141,26 @@ const resources = {
         language: "Язык",
         chooseLanguage: "Выберите язык приложения",
         darkMode: "Темная тема",
-        switchAppearance: "Сменить оформление"
+        switchAppearance: "Сменить оформление",
+        orderHistory: "История заказов",
+        orderHistoryDescription: "Посмотреть предыдущие заказы"
+      },
+      history: {
+        title: "История заказов",
+        order: "Заказ",
+        items: "Товары",
+        item: "Товар",
+        quantity: "Количество",
+        itemsCount: "Количество товаров",
+        paymentType: "Способ оплаты",
+        deliveryAddress: "Адрес доставки",
+        total: "Итого",
+        loadError: "Не удалось загрузить историю заказов",
+        emptyTitle: "Заказов пока нет",
+        emptyDescription: "Подтвержденные заказы будут появляться здесь.",
+        unknownDate: "Дата не указана",
+        statusUnknown: "Неизвестно",
+        notSpecified: "Не указано"
       },
       cart: {
         title: "Корзина",

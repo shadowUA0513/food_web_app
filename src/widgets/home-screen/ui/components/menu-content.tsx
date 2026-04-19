@@ -75,6 +75,9 @@ export function MenuContent({
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const companyId = getCompanyId();
   const { data: companySettings } = useCompanySettings(companyId);
+  const isCompanyClosed = companySettings
+    ? !isCompanyOpen(companySettings)
+    : false;
 
   const visibleCategoriesWithProducts = useMemo(
     () =>
@@ -246,7 +249,7 @@ export function MenuContent({
           </Box>
         ) : null}
 
-        {!isCompanyOpen(companySettings) ? (
+        {isCompanyClosed ? (
           <Paper
             radius={24}
             p="md"
@@ -313,28 +316,44 @@ export function MenuContent({
               {products.map((product) => {
                 const discount = getProductDiscount(product);
                 const discountedPrice = getDiscountedPrice(product);
+                const isProductInteractionDisabled =
+                  isCompanyClosed || !product.is_available;
 
                 return (
                   <Card
                     key={product.id}
-                    onClick={() => onOpenProduct(product)}
+                    onClick={() => {
+                      if (isProductInteractionDisabled) {
+                        return;
+                      }
+
+                      onOpenProduct(product);
+                    }}
                     onKeyDown={(event) => {
+                      if (isProductInteractionDisabled) {
+                        return;
+                      }
+
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         onOpenProduct(product);
                       }
                     }}
                     role="button"
-                    tabIndex={0}
+                    tabIndex={isProductInteractionDisabled ? -1 : 0}
+                    aria-disabled={isProductInteractionDisabled}
                     p={8}
                     style={{
-                      cursor: "pointer",
+                      cursor: isProductInteractionDisabled
+                        ? "not-allowed"
+                        : "pointer",
                       textAlign: "left",
                       borderBottom: isDark
                         ? "1px solid rgba(255,255,255,0.06)"
                         : "1px solid #e7e8ec",
                       borderRadius: 0,
                       background: isDark ? "#111318" : "#ffffff",
+                      opacity: isProductInteractionDisabled ? 0.72 : 1,
                     }}
                   >
                     <Group justify="space-between" align="center" wrap="nowrap">
@@ -364,7 +383,6 @@ export function MenuContent({
                           />
                         </Box>
 
-                        {/* TEXT + PRICE */}
                         <Stack gap={4} style={{ flex: 1 }}>
                           <Text fw={700} fz="sm" lineClamp={1} c={titleColor}>
                             {getLocalizedValue(
@@ -410,19 +428,21 @@ export function MenuContent({
                       <ActionIcon
                         size={34}
                         radius="xl"
-                        variant={product.is_available ? "filled" : "light"}
+                        variant={
+                          isProductInteractionDisabled ? "light" : "filled"
+                        }
                         color={brandColor}
-                        disabled={!product.is_available}
+                        disabled={isProductInteractionDisabled}
                         aria-label={t("product.addToCart")}
                         onClick={(event) => {
                           event.stopPropagation();
 
-                          if (!product.is_available) return;
+                          if (isProductInteractionDisabled) return;
 
                           onAddToCart(product);
                         }}
                         style={{
-                          boxShadow: product.is_available
+                          boxShadow: !isProductInteractionDisabled
                             ? isDark
                               ? `0 10px 18px ${hexToRgba(brandColor, 0.28)}`
                               : `0 10px 18px ${hexToRgba(brandColor, 0.22)}`
