@@ -79,23 +79,29 @@ export function isCompanyOpen(settings?: CompanySettings): boolean {
     return false;
   }
 
-  // Check if today matches day_of_week (0=Sun, 1=Mon, ..., 6=Sat)
   const now = new Date();
-  const currentDayOfWeek = now.getDay(); // 0=Sun, 6=Sat
-  if (currentDayOfWeek !== wh.day_of_week) {
+  const [startH = 0, startM = 0, startS = 0] = wh.start_time
+    .split(":")
+    .map(Number);
+  const [endH = 0, endM = 0, endS = 0] = wh.end_time.split(":").map(Number);
+
+  if (
+    [startH, startM, startS, endH, endM, endS].some(
+      (value) => !Number.isFinite(value),
+    )
+  ) {
     return false;
   }
 
-  // Parse times "HH:mm:ss" -> ms
-  const [startH, startM] = wh.start_time.split(':').map(Number);
-  const [endH, endM] = wh.end_time.split(':').map(Number);
+  const currentSeconds =
+    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const startSeconds = startH * 3600 + startM * 60 + startS;
+  const endSeconds = endH * 3600 + endM * 60 + endS;
 
-  const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM, 0).getTime();
-  const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM, 0).getTime();
+  if (startSeconds <= endSeconds) {
+    return currentSeconds >= startSeconds && currentSeconds <= endSeconds;
+  }
 
-  const nowTime = now.getTime();
-
-  return nowTime >= startTime && nowTime <= endTime;
+  return currentSeconds >= startSeconds || currentSeconds <= endSeconds;
 }
-
 

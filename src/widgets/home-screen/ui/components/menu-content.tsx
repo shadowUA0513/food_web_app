@@ -366,7 +366,7 @@ export function MenuContent({
                             height: 64,
                             borderRadius: 12,
                             overflow: "hidden",
-                            background: mutedBg,
+                            backg8round: mutedBg,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
