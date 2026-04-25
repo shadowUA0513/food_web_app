@@ -141,6 +141,9 @@ export async function getCompanyOrderHistory({
     const { data } = await api.get<CompanyOrderHistoryResponse>(
       `/api/v1/company/${companyId}/orders-history`,
       {
+        headers: {
+          companyId,
+        },
         params: {
           partner_id: partnerId ?? "null",
           user_id: userId,

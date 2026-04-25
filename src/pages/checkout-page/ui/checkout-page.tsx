@@ -1017,15 +1017,16 @@ export function CheckoutPage() {
                                     {cardPan}
                                   </Text>
                                   <Group gap="xs" wrap="nowrap">
-                                    <Button
+                                    <ActionIcon
                                       variant="light"
                                       color={brandColor}
                                       radius="xl"
-                                      leftSection={<IconCopy size={16} />}
+                                      size={36}
                                       onClick={() => void handleCopyCardPan(cardPan)}
+                                      aria-label={t("checkout.paymentCardCopy")}
                                     >
-                                      {t("checkout.paymentCardCopy")}
-                                    </Button>
+                                      <IconCopy size={16} />
+                                    </ActionIcon>
                                     <IconCreditCard size={18} color={brandColor} />
                                   </Group>
                                 </Group>
