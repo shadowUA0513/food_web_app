@@ -1,7 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { api } from "./api";
-import type { CreateOrderPayload, CreateOrderResponse, Order } from "../types/order";
+import type {
+  CreateOrderPayload,
+  CreateOrderResponse,
+  Order,
+  UploadPaymentScreenshotResponse,
+} from "../types/order";
 import type {
   CompanyOrderHistoryResponse,
   OrderHistoryItem,
@@ -33,6 +38,56 @@ export async function createCompanyOrder(payload: CreateOrderPayload) {
 export function useCreateCompanyOrder() {
   return useMutation({
     mutationFn: createCompanyOrder,
+  });
+}
+
+interface UploadPaymentScreenshotPayload {
+  companyId: string;
+  file: File;
+}
+
+export async function uploadPaymentScreenshot({
+  companyId,
+  file,
+}: UploadPaymentScreenshotPayload) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const { data } = await api.post<UploadPaymentScreenshotResponse>(
+      `/api/v1/company/${companyId}/order/payment-screenshot`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    const screenshotLink = data.data?.tg_payment_screenshot_link?.trim();
+
+    if (!screenshotLink) {
+      throw new Error("Payment screenshot link not found.");
+    }
+
+    return screenshotLink;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "Payment screenshot link not found."
+    ) {
+      throw error;
+    }
+
+    throw new Error(
+      getErrorMessage(error, "Failed to upload payment screenshot."),
+    );
+  }
+}
+
+export function useUploadPaymentScreenshot() {
+  return useMutation({
+    mutationFn: uploadPaymentScreenshot,
   });
 }
 

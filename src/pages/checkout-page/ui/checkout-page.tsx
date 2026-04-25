@@ -38,7 +38,10 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../app/theme/theme";
-import { useCreateCompanyOrder } from "../../../service/order";
+import {
+  useCreateCompanyOrder,
+  useUploadPaymentScreenshot,
+} from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
 import { useCompanySettings } from "../../../service/settings";
 import { useTelegramUser } from "../../../service/telegram-user";
@@ -101,6 +104,7 @@ export function CheckoutPage() {
     initialPartnerId ?? "",
   );
   const createOrderMutation = useCreateCompanyOrder();
+  const uploadPaymentScreenshotMutation = useUploadPaymentScreenshot();
   const { data: telegramUser } = useTelegramUser(telegramId);
   const {
     data: partners = [],
@@ -354,9 +358,18 @@ export function CheckoutPage() {
     }
 
     try {
+      if (paymentProofFile) {
+        orderPayload.tg_payment_screenshot_link =
+          await uploadPaymentScreenshotMutation.mutateAsync({
+            companyId,
+            file: paymentProofFile,
+          });
+      }
+
       await createOrderMutation.mutateAsync(orderPayload);
 
       clearCart();
+      setPaymentProofFile(null);
       showAppNotification({
         title: t("checkout.submitSuccessTitle"),
         message: t("checkout.submitSuccessMessage"),
@@ -736,7 +749,10 @@ export function CheckoutPage() {
               color={brandColor}
               fullWidth
               onClick={handleConfirmPaymentProof}
-              loading={createOrderMutation.isPending}
+              loading={
+                createOrderMutation.isPending ||
+                uploadPaymentScreenshotMutation.isPending
+              }
             >
               {t("checkout.paymentProofConfirm")}
             </Button>
@@ -1194,9 +1210,14 @@ export function CheckoutPage() {
                       radius="xl"
                       color={brandColor}
                       onClick={handleOrderButtonClick}
-                      loading={createOrderMutation.isPending}
+                      loading={
+                        createOrderMutation.isPending ||
+                        uploadPaymentScreenshotMutation.isPending
+                      }
                       disabled={
-                        createOrderMutation.isPending || isBelowMinOrderAmount
+                        createOrderMutation.isPending ||
+                        uploadPaymentScreenshotMutation.isPending ||
+                        isBelowMinOrderAmount
                       }
                       styles={{
                         root: {
