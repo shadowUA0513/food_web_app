@@ -92,6 +92,7 @@ export function CheckoutPage() {
   const [paymentProofOpened, { open: openPaymentProof, close: closePaymentProof }] =
     useDisclosure(false);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+  const [paymentProofLink, setPaymentProofLink] = useState<string | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
@@ -358,18 +359,15 @@ export function CheckoutPage() {
     }
 
     try {
-      if (paymentProofFile) {
-        orderPayload.tg_payment_screenshot_link =
-          await uploadPaymentScreenshotMutation.mutateAsync({
-            companyId,
-            file: paymentProofFile,
-          });
+      if (paymentProofLink) {
+        orderPayload.tg_payment_screenshot_link = paymentProofLink;
       }
 
       await createOrderMutation.mutateAsync(orderPayload);
 
       clearCart();
       setPaymentProofFile(null);
+      setPaymentProofLink(null);
       showAppNotification({
         title: t("checkout.submitSuccessTitle"),
         message: t("checkout.submitSuccessMessage"),
@@ -391,12 +389,31 @@ export function CheckoutPage() {
     }
   }
 
-  function handlePaymentProofSelect(file: File | null) {
+  async function handlePaymentProofSelect(file: File | null) {
     if (!file) {
       return;
     }
 
     setPaymentProofFile(file);
+    setPaymentProofLink(null);
+
+    try {
+      const screenshotLink = await uploadPaymentScreenshotMutation.mutateAsync({
+        companyId,
+        file,
+      });
+
+      setPaymentProofLink(screenshotLink);
+    } catch (error) {
+      setPaymentProofFile(null);
+      showAppNotification({
+        title: t("checkout.submitErrorTitle"),
+        message:
+          error instanceof Error ? error.message : t("common.unknownError"),
+        color: "red",
+        icon: <IconX size={18} />,
+      });
+    }
   }
 
   function handleOrderButtonClick() {
@@ -417,6 +434,16 @@ export function CheckoutPage() {
       showAppNotification({
         title: t("checkout.paymentProofRequiredTitle"),
         message: t("checkout.paymentProofRequiredMessage"),
+        color: "red",
+        icon: <IconInfoCircle size={18} />,
+      });
+      return;
+    }
+
+    if (!paymentProofLink) {
+      showAppNotification({
+        title: t("checkout.submitErrorTitle"),
+        message: t("checkout.paymentProofUploadPending"),
         color: "red",
         icon: <IconInfoCircle size={18} />,
       });
@@ -716,7 +743,10 @@ export function CheckoutPage() {
                   color="red"
                   radius="xl"
                   leftSection={<IconTrash size={16} />}
-                  onClick={() => setPaymentProofFile(null)}
+                  onClick={() => {
+                    setPaymentProofFile(null);
+                    setPaymentProofLink(null);
+                  }}
                 >
                   {t("checkout.paymentProofRemove")}
                 </Button>
@@ -736,6 +766,7 @@ export function CheckoutPage() {
                   radius="xl"
                   fullWidth
                   leftSection={<IconPhoto size={18} />}
+                  loading={uploadPaymentScreenshotMutation.isPending}
                 >
                   {paymentProofFile
                     ? t("checkout.paymentProofReplace")
