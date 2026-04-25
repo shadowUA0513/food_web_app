@@ -266,7 +266,7 @@ export function CheckoutPage() {
     });
   }
 
-  async function submitOrder() {
+  function validateOrderBeforeSubmit() {
     if (!selectedOrderTypeSupported) {
       showAppNotification({
         title: t("checkout.submitErrorTitle"),
@@ -274,7 +274,7 @@ export function CheckoutPage() {
         color: "red",
         icon: <IconX size={18} />,
       });
-      return;
+      return false;
     }
 
     if (isBelowMinOrderAmount) {
@@ -286,7 +286,7 @@ export function CheckoutPage() {
         color: "red",
         icon: <IconInfoCircle size={18} />,
       });
-      return;
+      return false;
     }
 
     const partnerId =
@@ -298,7 +298,7 @@ export function CheckoutPage() {
         color: "red",
         icon: <IconInfoCircle size={18} />,
       });
-      return;
+      return false;
     }
 
     if (orderType === "delivery-anywhere" && !deliveryAddress.trim()) {
@@ -307,7 +307,7 @@ export function CheckoutPage() {
         color: "red",
         icon: <IconInfoCircle size={18} />,
       });
-      return;
+      return false;
     }
 
     if (!telegramUser?.TgID) {
@@ -316,6 +316,22 @@ export function CheckoutPage() {
         color: "red",
         icon: <IconInfoCircle size={18} />,
       });
+      return false;
+    }
+
+    return true;
+  }
+
+  async function submitOrder() {
+    if (!validateOrderBeforeSubmit()) {
+      return;
+    }
+
+    const telegramUserId = telegramUser?.TgID;
+    const partnerId =
+      orderType === "delivery-to-organization" ? selectedPartnerId : undefined;
+
+    if (!telegramUserId) {
       return;
     }
 
@@ -323,7 +339,7 @@ export function CheckoutPage() {
       company_id: companyId,
       delivery_address:
         orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
-      user_id: telegramUser.TgID,
+      user_id: telegramUserId,
       payment_type: paymentType === "card" ? "card" : paymentType,
       comment: comment.trim() || undefined,
       items: cartList.map(({ product, count }) => ({
@@ -371,6 +387,10 @@ export function CheckoutPage() {
   }
 
   function handleOrderButtonClick() {
+    if (!validateOrderBeforeSubmit()) {
+      return;
+    }
+
     if (requiresPaymentProof) {
       openPaymentProof();
       return;
@@ -669,7 +689,7 @@ export function CheckoutPage() {
                 border: cardBorder,
               }}
             >
-              <Group justify="space-between" align="center" wrap="nowrap">
+              <Group justify="space-between" align="center" wrap="wrap">
                 <Stack gap={2}>
                   <Text fw={700} c={titleColor} lineClamp={1}>
                     {paymentProofFile.name}
@@ -691,7 +711,7 @@ export function CheckoutPage() {
             </Paper>
           ) : null}
 
-          <Group grow>
+          <Stack gap="sm">
             <FileButton
               onChange={handlePaymentProofSelect}
             >
@@ -701,6 +721,7 @@ export function CheckoutPage() {
                   variant="light"
                   color={brandColor}
                   radius="xl"
+                  fullWidth
                   leftSection={<IconPhoto size={18} />}
                 >
                   {paymentProofFile
@@ -713,12 +734,13 @@ export function CheckoutPage() {
             <Button
               radius="xl"
               color={brandColor}
+              fullWidth
               onClick={handleConfirmPaymentProof}
               loading={createOrderMutation.isPending}
             >
               {t("checkout.paymentProofConfirm")}
             </Button>
-          </Group>
+          </Stack>
         </Stack>
       </Modal>
 
