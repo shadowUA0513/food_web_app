@@ -26,6 +26,7 @@ import {
   IconCash,
   IconCopy,
   IconCreditCard,
+  IconFileDescription,
   IconPhoto,
   IconInfoCircle,
   IconTrash,
@@ -140,7 +141,10 @@ export function CheckoutPage() {
     [partners, selectedPartnerId],
   );
   const selectedOrderTypeSupported = supportedOrderTypes.includes(orderType);
-  const requiresPaymentProof = paymentType === "payme" || paymentType === "click";
+  const requiresPaymentProof =
+    paymentType === "payme" ||
+    paymentType === "click" ||
+    (!isOfficialPaymentStyle && paymentType === "card");
 
   useEffect(() => {
     if (!selectedOrderTypeSupported) {
@@ -150,6 +154,11 @@ export function CheckoutPage() {
 
   useEffect(() => {
     if (!paymentProofFile) {
+      setPaymentProofPreview(null);
+      return;
+    }
+
+    if (!paymentProofFile.type.startsWith("image/")) {
       setPaymentProofPreview(null);
       return;
     }
@@ -589,6 +598,36 @@ export function CheckoutPage() {
                 border: cardBorder,
               }}
             />
+          ) : paymentProofFile ? (
+            <Paper
+              radius={16}
+              p="xl"
+              style={{
+                background: mutedBg,
+                border: cardBorder,
+              }}
+            >
+              <Stack gap="xs" align="center">
+                <Box
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: "50%",
+                    background: hexToRgba(brandScale[1], isDark ? 0.22 : 0.55),
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <IconFileDescription size={24} color={brandColor} />
+                </Box>
+                <Text fw={800} c={titleColor}>
+                  {t("checkout.paymentProofFileReadyTitle")}
+                </Text>
+                <Text size="sm" c={textColor} ta="center">
+                  {t("checkout.paymentProofFileReadyDescription")}
+                </Text>
+              </Stack>
+            </Paper>
           ) : (
             <Paper
               radius={16}
@@ -655,7 +694,6 @@ export function CheckoutPage() {
           <Group grow>
             <FileButton
               onChange={handlePaymentProofSelect}
-              accept="image/png,image/jpeg,image/webp"
             >
               {(props) => (
                 <Button
