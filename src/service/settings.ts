@@ -29,6 +29,16 @@ function normalizeCompanySettings(raw: unknown): CompanySettings | null {
         (value): value is string => typeof value === 'string',
       )
     : undefined
+  const paymentAcceptingStyle =
+    typeof source.payment_accepting_style === 'string'
+      ? source.payment_accepting_style
+      : undefined
+  const cardPans = Array.isArray(source.card_pans)
+    ? source.card_pans
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : undefined
 
   if (!name && !logoUrl && !brandColor) {
     return null
@@ -41,6 +51,8 @@ function normalizeCompanySettings(raw: unknown): CompanySettings | null {
     logo_url: logoUrl,
     min_order_amount: minOrderAmount,
     supported_order_types: supportedOrderTypes,
+    payment_accepting_style: paymentAcceptingStyle,
+    card_pans: cardPans,
     today_working_hours: source.today_working_hours && typeof source.today_working_hours === 'object'
       ? ({
           day_of_week: Number((source.today_working_hours as Record<string, unknown>).day_of_week ?? 0),

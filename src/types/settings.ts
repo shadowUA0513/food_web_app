@@ -12,6 +12,8 @@ export interface CompanySettings {
   logo_url: string
   min_order_amount?: number
   supported_order_types?: string[]
+  payment_accepting_style?: string
+  card_pans?: string[]
   today_working_hours?: WorkingHours | null;
 }
 

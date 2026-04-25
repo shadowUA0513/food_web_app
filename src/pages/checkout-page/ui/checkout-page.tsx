@@ -5,8 +5,11 @@ import {
   Button,
   Divider,
   Drawer,
+  FileButton,
   Group,
+  Image,
   Loader,
+  Modal,
   Paper,
   SegmentedControl,
   Stack,
@@ -21,7 +24,11 @@ import {
   IconArrowLeft,
   IconCheck,
   IconCash,
+  IconCopy,
+  IconCreditCard,
+  IconPhoto,
   IconInfoCircle,
+  IconTrash,
   IconX,
   IconUserCircle,
 } from "@tabler/icons-react";
@@ -54,7 +61,7 @@ import { DeliveryAddressPicker } from "./delivery-address-picker";
 import { PartnerMapPicker } from "./partner-map-picker";
 
 type OrderType = "delivery-to-organization" | "delivery-anywhere";
-type PaymentType = "payme" | "click" | "cash";
+type PaymentType = "payme" | "click" | "cash" | "card";
 
 const DEFAULT_SUPPORTED_ORDER_TYPES: OrderType[] = [
   "delivery-to-organization",
@@ -78,6 +85,10 @@ export function CheckoutPage() {
   const [comment, setComment] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType>("cash");
+  const [paymentProofOpened, { open: openPaymentProof, close: closePaymentProof }] =
+    useDisclosure(false);
+  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
@@ -119,17 +130,37 @@ export function CheckoutPage() {
   }, [settings?.supported_order_types]);
   const minOrderAmount = settings?.min_order_amount ?? 0;
   const isBelowMinOrderAmount = cartTotalPrice < minOrderAmount;
+  const isOfficialPaymentStyle = settings?.payment_accepting_style === "o";
+  const cardPans = useMemo(
+    () => (settings?.card_pans ?? []).map((card) => card.trim()).filter(Boolean),
+    [settings?.card_pans],
+  );
   const selectedPartner = useMemo(
     () => partners.find((partner) => partner.id === selectedPartnerId) ?? null,
     [partners, selectedPartnerId],
   );
   const selectedOrderTypeSupported = supportedOrderTypes.includes(orderType);
+  const requiresPaymentProof = paymentType === "payme" || paymentType === "click";
 
   useEffect(() => {
     if (!selectedOrderTypeSupported) {
       setOrderType(supportedOrderTypes[0]);
     }
   }, [orderType, selectedOrderTypeSupported, supportedOrderTypes]);
+
+  useEffect(() => {
+    if (!paymentProofFile) {
+      setPaymentProofPreview(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(paymentProofFile);
+    setPaymentProofPreview(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [paymentProofFile]);
 
   const isDark = computedColorScheme === "dark";
   const pageBg = isDark ? "#111318" : "#f3f4f6";
@@ -145,21 +176,47 @@ export function CheckoutPage() {
     label: string;
     logo?: string;
   }> = [
-    {
-      value: "payme",
-      label: "Payme",
-      logo: paymeLogo,
-    },
-    {
-      value: "click",
-      label: "Click",
-      logo: clickLogo,
-    },
-    {
-      value: "cash",
-      label: t("checkout.paymentCash"),
-    },
+    ...(isOfficialPaymentStyle
+      ? [
+          {
+            value: "payme" as const,
+            label: "Payme",
+            logo: paymeLogo,
+          },
+          {
+            value: "click" as const,
+            label: "Click",
+            logo: clickLogo,
+          },
+          {
+            value: "cash" as const,
+            label: t("checkout.paymentCash"),
+          },
+        ]
+      : []),
+    ...(!isOfficialPaymentStyle && cardPans.length > 0
+      ? [
+          {
+            value: "card" as const,
+            label: t("checkout.paymentCard"),
+          },
+        ]
+      : []),
+    ...(!isOfficialPaymentStyle
+      ? [
+          {
+            value: "cash" as const,
+            label: t("checkout.paymentCash"),
+          },
+        ]
+      : []),
   ];
+
+  useEffect(() => {
+    if (!paymentOptions.some((option) => option.value === paymentType)) {
+      setPaymentType(paymentOptions[0]?.value ?? "cash");
+    }
+  }, [paymentOptions, paymentType]);
 
   function getLocalizedValue(nameUz: string, nameRu: string) {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
@@ -200,7 +257,7 @@ export function CheckoutPage() {
     });
   }
 
-  async function handleSubmitOrder() {
+  async function submitOrder() {
     if (!selectedOrderTypeSupported) {
       showAppNotification({
         title: t("checkout.submitErrorTitle"),
@@ -258,7 +315,7 @@ export function CheckoutPage() {
       delivery_address:
         orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
       user_id: telegramUser.TgID,
-      payment_type: paymentType,
+      payment_type: paymentType === "card" ? "card" : paymentType,
       comment: comment.trim() || undefined,
       items: cartList.map(({ product, count }) => ({
         product_id: product.id,
@@ -290,6 +347,61 @@ export function CheckoutPage() {
         title: t("checkout.submitErrorTitle"),
         message:
           error instanceof Error ? error.message : t("common.unknownError"),
+        color: "red",
+        icon: <IconX size={18} />,
+      });
+    }
+  }
+
+  function handlePaymentProofSelect(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    setPaymentProofFile(file);
+  }
+
+  function handleOrderButtonClick() {
+    if (requiresPaymentProof) {
+      openPaymentProof();
+      return;
+    }
+
+    void submitOrder();
+  }
+
+  function handleConfirmPaymentProof() {
+    if (!paymentProofFile) {
+      showAppNotification({
+        title: t("checkout.paymentProofRequiredTitle"),
+        message: t("checkout.paymentProofRequiredMessage"),
+        color: "red",
+        icon: <IconInfoCircle size={18} />,
+      });
+      return;
+    }
+
+    closePaymentProof();
+    void submitOrder();
+  }
+
+  function handleClosePaymentProof() {
+    closePaymentProof();
+  }
+
+  async function handleCopyCardPan(cardPan: string) {
+    try {
+      await navigator.clipboard.writeText(cardPan);
+      showAppNotification({
+        title: t("checkout.paymentCardCopiedTitle"),
+        message: t("checkout.paymentCardCopiedMessage"),
+        color: "green",
+        icon: <IconCheck size={18} />,
+      });
+    } catch {
+      showAppNotification({
+        title: t("checkout.submitErrorTitle"),
+        message: t("common.unknownError"),
         color: "red",
         icon: <IconX size={18} />,
       });
@@ -446,6 +558,131 @@ export function CheckoutPage() {
             : null}
         </Stack>
       </Drawer>
+
+      <Modal
+        opened={paymentProofOpened}
+        onClose={handleClosePaymentProof}
+        centered
+        radius="lg"
+        title={t("checkout.paymentProofModalTitle")}
+        styles={{
+          content: { background: surfaceBg },
+          header: { background: surfaceBg, color: titleColor },
+          title: { fontWeight: 800 },
+          body: { background: surfaceBg },
+        }}
+      >
+        <Stack gap="md">
+          <Text size="sm" c={textColor}>
+            {t("checkout.paymentProofModalDescription")}
+          </Text>
+
+          {paymentProofPreview ? (
+            <Image
+              src={paymentProofPreview}
+              alt={t("checkout.paymentProofPreviewAlt")}
+              radius="md"
+              h={220}
+              fit="contain"
+              style={{
+                background: mutedBg,
+                border: cardBorder,
+              }}
+            />
+          ) : (
+            <Paper
+              radius={16}
+              p="xl"
+              style={{
+                background: mutedBg,
+                border: cardBorder,
+              }}
+            >
+              <Stack gap="xs" align="center">
+                <Box
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: "50%",
+                    background: hexToRgba(brandScale[1], isDark ? 0.22 : 0.55),
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <IconPhoto size={24} color={brandColor} />
+                </Box>
+                <Text fw={800} c={titleColor}>
+                  {t("checkout.paymentProofEmptyTitle")}
+                </Text>
+                <Text size="sm" c={textColor} ta="center">
+                  {t("checkout.paymentProofEmptyDescription")}
+                </Text>
+              </Stack>
+            </Paper>
+          )}
+
+          {paymentProofFile ? (
+            <Paper
+              radius={14}
+              p="sm"
+              style={{
+                background: mutedBg,
+                border: cardBorder,
+              }}
+            >
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Stack gap={2}>
+                  <Text fw={700} c={titleColor} lineClamp={1}>
+                    {paymentProofFile.name}
+                  </Text>
+                  <Text size="xs" c={textColor}>
+                    {(paymentProofFile.size / 1024 / 1024).toFixed(2)} MB
+                  </Text>
+                </Stack>
+                <Button
+                  variant="subtle"
+                  color="red"
+                  radius="xl"
+                  leftSection={<IconTrash size={16} />}
+                  onClick={() => setPaymentProofFile(null)}
+                >
+                  {t("checkout.paymentProofRemove")}
+                </Button>
+              </Group>
+            </Paper>
+          ) : null}
+
+          <Group grow>
+            <FileButton
+              onChange={handlePaymentProofSelect}
+              accept="image/png,image/jpeg,image/webp"
+            >
+              {(props) => (
+                <Button
+                  {...props}
+                  variant="light"
+                  color={brandColor}
+                  radius="xl"
+                  leftSection={<IconPhoto size={18} />}
+                >
+                  {paymentProofFile
+                    ? t("checkout.paymentProofReplace")
+                    : t("checkout.paymentProofUpload")}
+                </Button>
+              )}
+            </FileButton>
+
+            <Button
+              radius="xl"
+              color={brandColor}
+              onClick={handleConfirmPaymentProof}
+              loading={createOrderMutation.isPending}
+            >
+              {t("checkout.paymentProofConfirm")}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <AppShell.Main className="home-main-scroll" style={{ overflowY: "auto" }}>
         <Box mih="100dvh" bg={pageBg} px={12} py={14}>
@@ -711,10 +948,17 @@ export function CheckoutPage() {
                                     flexShrink: 0,
                                   }}
                                 >
-                                  <IconCash
-                                    size={20}
-                                    color={active ? "#ffffff" : brandColor}
-                                  />
+                                  {option.value === "card" ? (
+                                    <IconCreditCard
+                                      size={20}
+                                      color={active ? "#ffffff" : brandColor}
+                                    />
+                                  ) : (
+                                    <IconCash
+                                      size={20}
+                                      color={active ? "#ffffff" : brandColor}
+                                    />
+                                  )}
                                 </Box>
                               )}
                               <Text fw={800} size="sm" c={titleColor}>
@@ -740,6 +984,57 @@ export function CheckoutPage() {
                         );
                       })}
                     </Group>
+
+                    {paymentType === "card" && cardPans.length > 0 ? (
+                      <Paper
+                        radius={18}
+                        p="md"
+                        style={{
+                          background: mutedBg,
+                          border: cardBorder,
+                        }}
+                      >
+                        <Stack gap="sm">
+                          <Text fw={700} c={titleColor}>
+                            {t("checkout.paymentCardNumbers")}
+                          </Text>
+                          <Text size="sm" c={textColor}>
+                            {t("checkout.paymentCardHint")}
+                          </Text>
+                          <Stack gap="xs">
+                            {cardPans.map((cardPan) => (
+                              <Paper
+                                key={cardPan}
+                                radius={14}
+                                p="sm"
+                                style={{
+                                  background: surfaceBg,
+                                  border: cardBorder,
+                                }}
+                              >
+                                <Group justify="space-between" align="center" wrap="nowrap">
+                                  <Text fw={700} c={titleColor}>
+                                    {cardPan}
+                                  </Text>
+                                  <Group gap="xs" wrap="nowrap">
+                                    <Button
+                                      variant="light"
+                                      color={brandColor}
+                                      radius="xl"
+                                      leftSection={<IconCopy size={16} />}
+                                      onClick={() => void handleCopyCardPan(cardPan)}
+                                    >
+                                      {t("checkout.paymentCardCopy")}
+                                    </Button>
+                                    <IconCreditCard size={18} color={brandColor} />
+                                  </Group>
+                                </Group>
+                              </Paper>
+                            ))}
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    ) : null}
                   </Stack>
                 </Paper>
 
@@ -837,7 +1132,7 @@ export function CheckoutPage() {
                       size="md"
                       radius="xl"
                       color={brandColor}
-                      onClick={handleSubmitOrder}
+                      onClick={handleOrderButtonClick}
                       loading={createOrderMutation.isPending}
                       disabled={
                         createOrderMutation.isPending || isBelowMinOrderAmount
