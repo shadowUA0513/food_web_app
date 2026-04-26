@@ -5,7 +5,6 @@ import type {
   CreateOrderPayload,
   CreateOrderResponse,
   Order,
-  UploadPaymentScreenshotResponse,
 } from "../types/order";
 import type {
   CompanyOrderHistoryResponse,
@@ -22,11 +21,31 @@ function getErrorMessage(error: unknown, fallback: string) {
   return axiosError.response?.data?.message ?? fallback;
 }
 
-export async function createCompanyOrder(payload: CreateOrderPayload) {
+interface CreateCompanyOrderRequest {
+  payload: CreateOrderPayload;
+  file?: File | null;
+}
+
+export async function createCompanyOrder({
+  payload,
+  file,
+}: CreateCompanyOrderRequest) {
   try {
+    const requestBody = new FormData();
+    requestBody.append("payload", JSON.stringify(payload));
+
+    if (file) {
+      requestBody.append("file", file);
+    }
+
     const { data } = await api.post<CreateOrderResponse>(
       `/api/v1/twa/company/${payload.company_id}/order`,
-      payload,
+      requestBody,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
 
     return (data.data?.order ?? data.data ?? null) as Order | null;
@@ -38,56 +57,6 @@ export async function createCompanyOrder(payload: CreateOrderPayload) {
 export function useCreateCompanyOrder() {
   return useMutation({
     mutationFn: createCompanyOrder,
-  });
-}
-
-interface UploadPaymentScreenshotPayload {
-  companyId: string;
-  file: File;
-}
-
-export async function uploadPaymentScreenshot({
-  companyId,
-  file,
-}: UploadPaymentScreenshotPayload) {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    const { data } = await api.post<UploadPaymentScreenshotResponse>(
-      `/api/v1/company/${companyId}/order/payment-screenshot`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    );
-
-    const screenshotLink = data.data?.tg_payment_screenshot_link?.trim();
-
-    if (!screenshotLink) {
-      throw new Error("Payment screenshot link not found.");
-    }
-
-    return screenshotLink;
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === "Payment screenshot link not found."
-    ) {
-      throw error;
-    }
-
-    throw new Error(
-      getErrorMessage(error, "Failed to upload payment screenshot."),
-    );
-  }
-}
-
-export function useUploadPaymentScreenshot() {
-  return useMutation({
-    mutationFn: uploadPaymentScreenshot,
   });
 }
 

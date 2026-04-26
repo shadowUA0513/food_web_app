@@ -10,7 +10,6 @@ export interface CreateOrderPayload {
   delivery_address: string;
   user_id: number;
   payment_type: string;
-  tg_payment_screenshot_link?: string;
   comment?: string;
   items: CreateOrderItemPayload[];
 }
@@ -32,12 +31,5 @@ export interface CreateOrderResponse {
   error: boolean;
   data?: {
     order?: Order;
-  };
-}
-
-export interface UploadPaymentScreenshotResponse {
-  error: boolean;
-  data?: {
-    tg_payment_screenshot_link?: string;
   };
 }

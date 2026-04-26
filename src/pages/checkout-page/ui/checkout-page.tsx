@@ -40,7 +40,6 @@ import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../app/theme/theme";
 import {
   useCreateCompanyOrder,
-  useUploadPaymentScreenshot,
 } from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
 import { useCompanySettings } from "../../../service/settings";
@@ -92,7 +91,6 @@ export function CheckoutPage() {
   const [paymentProofOpened, { open: openPaymentProof, close: closePaymentProof }] =
     useDisclosure(false);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-  const [paymentProofLink, setPaymentProofLink] = useState<string | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
@@ -105,7 +103,6 @@ export function CheckoutPage() {
     initialPartnerId ?? "",
   );
   const createOrderMutation = useCreateCompanyOrder();
-  const uploadPaymentScreenshotMutation = useUploadPaymentScreenshot();
   const { data: telegramUser } = useTelegramUser(telegramId);
   const {
     data: partners = [],
@@ -359,15 +356,13 @@ export function CheckoutPage() {
     }
 
     try {
-      if (paymentProofLink) {
-        orderPayload.tg_payment_screenshot_link = paymentProofLink;
-      }
-
-      await createOrderMutation.mutateAsync(orderPayload);
+      await createOrderMutation.mutateAsync({
+        payload: orderPayload,
+        file: paymentProofFile,
+      });
 
       clearCart();
       setPaymentProofFile(null);
-      setPaymentProofLink(null);
       showAppNotification({
         title: t("checkout.submitSuccessTitle"),
         message: t("checkout.submitSuccessMessage"),
@@ -395,25 +390,6 @@ export function CheckoutPage() {
     }
 
     setPaymentProofFile(file);
-    setPaymentProofLink(null);
-
-    try {
-      const screenshotLink = await uploadPaymentScreenshotMutation.mutateAsync({
-        companyId,
-        file,
-      });
-
-      setPaymentProofLink(screenshotLink);
-    } catch (error) {
-      setPaymentProofFile(null);
-      showAppNotification({
-        title: t("checkout.submitErrorTitle"),
-        message:
-          error instanceof Error ? error.message : t("common.unknownError"),
-        color: "red",
-        icon: <IconX size={18} />,
-      });
-    }
   }
 
   function handleOrderButtonClick() {
@@ -434,16 +410,6 @@ export function CheckoutPage() {
       showAppNotification({
         title: t("checkout.paymentProofRequiredTitle"),
         message: t("checkout.paymentProofRequiredMessage"),
-        color: "red",
-        icon: <IconInfoCircle size={18} />,
-      });
-      return;
-    }
-
-    if (!paymentProofLink) {
-      showAppNotification({
-        title: t("checkout.submitErrorTitle"),
-        message: t("checkout.paymentProofUploadPending"),
         color: "red",
         icon: <IconInfoCircle size={18} />,
       });
@@ -745,7 +711,6 @@ export function CheckoutPage() {
                   leftSection={<IconTrash size={16} />}
                   onClick={() => {
                     setPaymentProofFile(null);
-                    setPaymentProofLink(null);
                   }}
                 >
                   {t("checkout.paymentProofRemove")}
@@ -766,7 +731,6 @@ export function CheckoutPage() {
                   radius="xl"
                   fullWidth
                   leftSection={<IconPhoto size={18} />}
-                  loading={uploadPaymentScreenshotMutation.isPending}
                 >
                   {paymentProofFile
                     ? t("checkout.paymentProofReplace")
@@ -780,10 +744,7 @@ export function CheckoutPage() {
               color={brandColor}
               fullWidth
               onClick={handleConfirmPaymentProof}
-              loading={
-                createOrderMutation.isPending ||
-                uploadPaymentScreenshotMutation.isPending
-              }
+              loading={createOrderMutation.isPending}
             >
               {t("checkout.paymentProofConfirm")}
             </Button>
@@ -1242,12 +1203,10 @@ export function CheckoutPage() {
                       color={brandColor}
                       onClick={handleOrderButtonClick}
                       loading={
-                        createOrderMutation.isPending ||
-                        uploadPaymentScreenshotMutation.isPending
+                        createOrderMutation.isPending
                       }
                       disabled={
                         createOrderMutation.isPending ||
-                        uploadPaymentScreenshotMutation.isPending ||
                         isBelowMinOrderAmount
                       }
                       styles={{
