@@ -1,7 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { api } from "./api";
-import type { CreateOrderPayload, CreateOrderResponse, Order } from "../types/order";
+import type {
+  CreateOrderPayload,
+  CreateOrderResponse,
+  Order,
+} from "../types/order";
 import type {
   CompanyOrderHistoryResponse,
   OrderHistoryItem,
@@ -17,11 +21,31 @@ function getErrorMessage(error: unknown, fallback: string) {
   return axiosError.response?.data?.message ?? fallback;
 }
 
-export async function createCompanyOrder(payload: CreateOrderPayload) {
+interface CreateCompanyOrderRequest {
+  payload: CreateOrderPayload;
+  file?: File | null;
+}
+
+export async function createCompanyOrder({
+  payload,
+  file,
+}: CreateCompanyOrderRequest) {
   try {
+    const requestBody = new FormData();
+    requestBody.append("payload", JSON.stringify(payload));
+
+    if (file) {
+      requestBody.append("file", file);
+    }
+
     const { data } = await api.post<CreateOrderResponse>(
       `/api/v1/twa/company/${payload.company_id}/order`,
-      payload,
+      requestBody,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
 
     return (data.data?.order ?? data.data ?? null) as Order | null;
@@ -141,6 +165,9 @@ export async function getCompanyOrderHistory({
     const { data } = await api.get<CompanyOrderHistoryResponse>(
       `/api/v1/company/${companyId}/orders-history`,
       {
+        headers: {
+          companyId,
+        },
         params: {
           partner_id: partnerId ?? "null",
           user_id: userId,
