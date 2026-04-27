@@ -163,7 +163,7 @@ export async function getCompanyOrderHistory({
 
   try {
     const { data } = await api.get<CompanyOrderHistoryResponse>(
-      `/api/v1/company/orders-history`,
+      `/api/v1/orders-history`,
       {
         params: {
           company_id: companyId,
