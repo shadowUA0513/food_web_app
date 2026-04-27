@@ -14,6 +14,7 @@ export interface CompanySettings {
   supported_order_types?: string[]
   payment_accepting_style?: string
   card_pans?: string[]
+  phone_numbers?: string[]
   today_working_hours?: WorkingHours | null;
 }
 

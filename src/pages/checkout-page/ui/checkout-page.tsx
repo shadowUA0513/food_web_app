@@ -465,6 +465,7 @@ export function CheckoutPage() {
           telegramUser?.PhoneNumber ||
           (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
         }
+        phoneNumbers={settings?.phone_numbers}
         onOpenOrderHistory={openOrderHistoryPage}
       />
 

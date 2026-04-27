@@ -7,12 +7,14 @@ interface ApiErrorResponse {
   message?: string
 }
 
+type PartialCompanySettings = Partial<CompanySettings>
+
 function getErrorMessage(error: unknown, fallback: string) {
   const axiosError = error as AxiosError<ApiErrorResponse>
   return axiosError.response?.data?.message ?? fallback
 }
 
-function normalizeCompanySettings(raw: unknown): CompanySettings | null {
+function normalizeCompanySettings(raw: unknown): PartialCompanySettings | null {
   if (!raw || typeof raw !== 'object') {
     return null
   }
@@ -39,10 +41,17 @@ function normalizeCompanySettings(raw: unknown): CompanySettings | null {
         .map((value) => value.trim())
         .filter(Boolean)
     : undefined
-
-  if (!name && !logoUrl && !brandColor) {
-    return null
-  }
+  const rawPhoneNumbers = Array.isArray(source.phone_numbers)
+    ? source.phone_numbers
+    : Array.isArray(source.phoneNumbers)
+      ? source.phoneNumbers
+      : undefined
+  const phoneNumbers = rawPhoneNumbers
+    ? rawPhoneNumbers
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : undefined
 
   return {
     id,
@@ -53,6 +62,7 @@ function normalizeCompanySettings(raw: unknown): CompanySettings | null {
     supported_order_types: supportedOrderTypes,
     payment_accepting_style: paymentAcceptingStyle,
     card_pans: cardPans,
+    phone_numbers: phoneNumbers,
     today_working_hours: source.today_working_hours && typeof source.today_working_hours === 'object'
       ? ({
           day_of_week: Number((source.today_working_hours as Record<string, unknown>).day_of_week ?? 0),
@@ -64,17 +74,47 @@ function normalizeCompanySettings(raw: unknown): CompanySettings | null {
   }
 }
 
+function mergeCompanySettings(
+  ...sources: Array<PartialCompanySettings | null>
+): CompanySettings | null {
+  const merged = sources.reduce<PartialCompanySettings>(
+    (acc, source) => ({
+      ...acc,
+      ...source,
+    }),
+    {},
+  )
+
+  if (!merged.name && !merged.logo_url && !merged.brand_color) {
+    return null
+  }
+
+  return {
+    id: merged.id ?? '',
+    name: merged.name ?? '',
+    brand_color: merged.brand_color ?? '',
+    logo_url: merged.logo_url ?? '',
+    min_order_amount: merged.min_order_amount,
+    supported_order_types: merged.supported_order_types,
+    payment_accepting_style: merged.payment_accepting_style,
+    card_pans: merged.card_pans,
+    phone_numbers: merged.phone_numbers,
+    today_working_hours: merged.today_working_hours ?? null,
+  }
+}
+
 export async function getCompanySettings(companyId: string) {
   try {
     const { data } = await api.get<CompanySettingsResponse>(
       `/api/v1/twa/company/${companyId}/settings`,
     )
 
-    const companySettings =
-      normalizeCompanySettings(data.data?.company_settings) ??
-      normalizeCompanySettings(data.data?.settings) ??
-      normalizeCompanySettings(data.data) ??
-      normalizeCompanySettings(data)
+    const companySettings = mergeCompanySettings(
+      normalizeCompanySettings(data),
+      normalizeCompanySettings(data.data),
+      normalizeCompanySettings(data.data?.settings),
+      normalizeCompanySettings(data.data?.company_settings),
+    )
 
     if (!companySettings) {
       throw new Error('Company settings not found.')

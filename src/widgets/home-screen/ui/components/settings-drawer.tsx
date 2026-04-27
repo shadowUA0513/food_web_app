@@ -25,6 +25,7 @@ interface SettingsDrawerProps {
   mutedBg: string;
   userName?: string;
   userSubtitle?: string;
+  phoneNumbers?: string[];
   onOpenOrderHistory?: () => void;
 }
 
@@ -39,6 +40,7 @@ export function SettingsDrawer({
   textColor,
   userName,
   userSubtitle,
+  phoneNumbers,
   onOpenOrderHistory,
 }: SettingsDrawerProps) {
   const { t } = useTranslation();
@@ -111,6 +113,44 @@ export function SettingsDrawer({
                     {userSubtitle}
                   </Text>
                 ) : null}
+              </Stack>
+            </Group>
+          ) : null}
+
+          {phoneNumbers && phoneNumbers.length > 0 ? (
+            <Group
+              justify="space-between"
+              align="center"
+              wrap="nowrap"
+              px={12}
+              py={10}
+              style={{
+                background: rowBg,
+                border: rowBorder,
+                borderRadius: 16,
+              }}
+            >
+              <Stack gap={4} style={{ minWidth: 0 }}>
+                <Text fw={800} fz="0.9rem" c={titleColor} lh={1.1}>
+                  {t("settings.phoneNumbers")}
+                </Text>
+                <Text fz="0.74rem" c={textColor} lh={1.3}>
+                  {t("settings.phoneNumbersDescription")}
+                </Text>
+              </Stack>
+              <Stack gap={2} align="flex-end" style={{ minWidth: 0 }}>
+                {phoneNumbers.map((phoneNumber) => (
+                  <Text
+                    key={phoneNumber}
+                    fw={700}
+                    fz="0.9rem"
+                    c={titleColor}
+                    lh={1.2}
+                    ta="right"
+                  >
+                    {phoneNumber}
+                  </Text>
+                ))}
               </Stack>
             </Group>
           ) : null}

@@ -153,6 +153,7 @@ export function HomeScreen() {
           telegramUser?.PhoneNumber ||
           (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
         }
+        phoneNumbers={settings?.phone_numbers}
         onOpenOrderHistory={openOrderHistoryPage}
       />
 
