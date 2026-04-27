@@ -22,7 +22,6 @@ import { TELEGRAM_MOBILE_WIDTH } from "../../../shared/config/telegram";
 import {
   formatPrice,
   getCompanyId,
-  getPartnerId,
   getTelegramId,
 } from "../../../widgets/home-screen/ui/home-utils";
 
@@ -34,7 +33,6 @@ export function OrderHistoryPage() {
   const location = useLocation();
 
   const companyId = getCompanyId();
-  const partnerId = getPartnerId();
   const telegramId = getTelegramId();
   const { data: telegramUser } = useTelegramUser(telegramId);
   const historyUserId =
@@ -42,7 +40,6 @@ export function OrderHistoryPage() {
   const { data: orders = [], isLoading, isError, error } =
     useCompanyOrderHistory({
       companyId,
-      partnerId,
       userId: Number.isFinite(historyUserId) ? historyUserId : undefined,
     });
 
