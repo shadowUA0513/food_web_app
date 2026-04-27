@@ -163,12 +163,10 @@ export async function getCompanyOrderHistory({
 
   try {
     const { data } = await api.get<CompanyOrderHistoryResponse>(
-      `/api/v1/company/${companyId}/orders-history`,
+      `/api/v1/company/orders-history`,
       {
-        headers: {
-          companyId,
-        },
         params: {
+          company_id: companyId,
           partner_id: partnerId ?? "null",
           user_id: userId,
           payment_type: paymentType ?? "null",
