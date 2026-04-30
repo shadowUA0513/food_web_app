@@ -151,11 +151,6 @@ function extractOrdersHistory(raw: unknown): OrderHistoryOrder[] {
 export async function getCompanyOrderHistory({
   companyId,
   userId,
-  partnerId = null,
-  paymentType = null,
-  status = null,
-  page = null,
-  limit = null,
   
 }: OrderHistoryParams) {
   if (!userId) {
@@ -167,12 +162,7 @@ export async function getCompanyOrderHistory({
       `/api/v1/company/${companyId}/orders-history`,
       {
         params: {
-          partner_id: partnerId ?? "null",
           user_id: userId,
-          payment_type: paymentType ?? "null",
-          status: status ?? "null",
-          page: page ?? "null",
-          limit: limit ?? "null",
           company_id : companyId ?? "null"
         },
       },
