@@ -63,6 +63,7 @@ export function useCreateCompanyOrder() {
 interface OrderHistoryParams {
   companyId: string;
   userId?: number;
+  partnerId?: string | null;
   paymentType?: string | null;
   status?: string | null;
   page?: number | null;
@@ -150,10 +151,12 @@ function extractOrdersHistory(raw: unknown): OrderHistoryOrder[] {
 export async function getCompanyOrderHistory({
   companyId,
   userId,
+  partnerId = null,
   paymentType = null,
   status = null,
   page = null,
   limit = null,
+  
 }: OrderHistoryParams) {
   if (!userId) {
     return [];
@@ -161,15 +164,16 @@ export async function getCompanyOrderHistory({
 
   try {
     const { data } = await api.get<CompanyOrderHistoryResponse>(
-      `/api/v1/orders-history`,
+      `/api/v1/company/${companyId}/orders-history`,
       {
         params: {
-          company_id: companyId,
+          partner_id: partnerId ?? "null",
           user_id: userId,
           payment_type: paymentType ?? "null",
           status: status ?? "null",
           page: page ?? "null",
           limit: limit ?? "null",
+          company_id : companyId ?? "null"
         },
       },
     );
@@ -181,13 +185,14 @@ export async function getCompanyOrderHistory({
 }
 
 export function useCompanyOrderHistory(params: OrderHistoryParams) {
-  const { companyId, userId, paymentType, status, page, limit } = params;
+  const { companyId, userId, partnerId, paymentType, status, page, limit } = params;
 
   return useQuery({
     queryKey: [
       "company-order-history",
       companyId,
       userId,
+      partnerId,
       paymentType,
       status,
       page,
