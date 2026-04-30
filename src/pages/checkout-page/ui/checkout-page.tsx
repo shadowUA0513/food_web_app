@@ -38,9 +38,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../app/theme/theme";
-import {
-  useCreateCompanyOrder,
-} from "../../../service/order";
+import { useCreateCompanyOrder } from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
 import { useCompanySettings } from "../../../service/settings";
 import { useTelegramUser } from "../../../service/telegram-user";
@@ -88,10 +86,14 @@ export function CheckoutPage() {
   const [comment, setComment] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType>("cash");
-  const [paymentProofOpened, { open: openPaymentProof, close: closePaymentProof }] =
-    useDisclosure(false);
+  const [
+    paymentProofOpened,
+    { open: openPaymentProof, close: closePaymentProof },
+  ] = useDisclosure(false);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(
+    null,
+  );
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
@@ -135,7 +137,8 @@ export function CheckoutPage() {
   const isBelowMinOrderAmount = cartTotalPrice < minOrderAmount;
   const isOfficialPaymentStyle = settings?.payment_accepting_style === "o";
   const cardPans = useMemo(
-    () => (settings?.card_pans ?? []).map((card) => card.trim()).filter(Boolean),
+    () =>
+      (settings?.card_pans ?? []).map((card) => card.trim()).filter(Boolean),
     [settings?.card_pans],
   );
   const selectedPartner = useMemo(
@@ -358,7 +361,6 @@ export function CheckoutPage() {
     try {
       await createOrderMutation.mutateAsync({
         payload: orderPayload,
-        file: paymentProofFile,
       });
 
       clearCart();
@@ -721,9 +723,7 @@ export function CheckoutPage() {
           ) : null}
 
           <Stack gap="sm">
-            <FileButton
-              onChange={handlePaymentProofSelect}
-            >
+            <FileButton onChange={handlePaymentProofSelect}>
               {(props) => (
                 <Button
                   {...props}
@@ -1081,7 +1081,11 @@ export function CheckoutPage() {
                                   border: cardBorder,
                                 }}
                               >
-                                <Group justify="space-between" align="center" wrap="nowrap">
+                                <Group
+                                  justify="space-between"
+                                  align="center"
+                                  wrap="nowrap"
+                                >
                                   <Text fw={700} c={titleColor}>
                                     {cardPan}
                                   </Text>
@@ -1091,12 +1095,17 @@ export function CheckoutPage() {
                                       color={brandColor}
                                       radius="xl"
                                       size={36}
-                                      onClick={() => void handleCopyCardPan(cardPan)}
+                                      onClick={() =>
+                                        void handleCopyCardPan(cardPan)
+                                      }
                                       aria-label={t("checkout.paymentCardCopy")}
                                     >
                                       <IconCopy size={16} />
                                     </ActionIcon>
-                                    <IconCreditCard size={18} color={brandColor} />
+                                    <IconCreditCard
+                                      size={18}
+                                      color={brandColor}
+                                    />
                                   </Group>
                                 </Group>
                               </Paper>
@@ -1203,12 +1212,9 @@ export function CheckoutPage() {
                       radius="xl"
                       color={brandColor}
                       onClick={handleOrderButtonClick}
-                      loading={
-                        createOrderMutation.isPending
-                      }
+                      loading={createOrderMutation.isPending}
                       disabled={
-                        createOrderMutation.isPending ||
-                        isBelowMinOrderAmount
+                        createOrderMutation.isPending || isBelowMinOrderAmount
                       }
                       styles={{
                         root: {

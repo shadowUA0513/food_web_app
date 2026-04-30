@@ -23,29 +23,15 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 interface CreateCompanyOrderRequest {
   payload: CreateOrderPayload;
-  file?: File | null;
 }
 
 export async function createCompanyOrder({
   payload,
-  file,
 }: CreateCompanyOrderRequest) {
   try {
-    const requestBody = new FormData();
-    requestBody.append("payload", JSON.stringify(payload));
-
-    if (file) {
-      requestBody.append("file", file);
-    }
-
     const { data } = await api.post<CreateOrderResponse>(
       `/api/v1/twa/company/${payload.company_id}/order`,
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
+      payload,
     );
 
     return (data.data?.order ?? data.data ?? null) as Order | null;
