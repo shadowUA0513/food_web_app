@@ -150,8 +150,7 @@ function extractOrdersHistory(raw: unknown): OrderHistoryOrder[] {
 
 export async function getCompanyOrderHistory({
   companyId,
-  userId,
-  
+  userId,  
 }: OrderHistoryParams) {
   if (!userId) {
     return [];
@@ -163,7 +162,6 @@ export async function getCompanyOrderHistory({
       {
         params: {
           user_id: userId,
-          company_id : companyId ?? "null"
         },
       },
     );
