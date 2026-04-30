@@ -361,6 +361,7 @@ export function CheckoutPage() {
     try {
       await createOrderMutation.mutateAsync({
         payload: orderPayload,
+        file: paymentProofFile,
       });
 
       clearCart();
