@@ -93,6 +93,20 @@ export function ProductDetailsPage() {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
   }
 
+  function getLocalizedDescription(
+    descriptionUz?: string,
+    descriptionRu?: string,
+  ) {
+    if (locale === "uz") {
+      return (
+        descriptionUz || descriptionRu || t("menu.productFallbackDescription")
+      );
+    }
+    return (
+      descriptionRu || descriptionUz || t("menu.productFallbackDescription")
+    );
+  }
+
   function goBack() {
     navigate({ pathname: "/", search: location.search });
   }
@@ -227,8 +241,10 @@ export function ProductDetailsPage() {
                     )}
                   </Title>
                   <Text mb="sm" c={textColor}>
-                    {activeProduct.description ||
-                      t("menu.productFallbackDescription")}
+                    {getLocalizedDescription(
+                      activeProduct.description_uz,
+                      activeProduct.description,
+                    )}
                   </Text>
 
                   <Paper

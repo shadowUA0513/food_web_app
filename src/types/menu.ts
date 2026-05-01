@@ -5,6 +5,7 @@ export interface Product {
   name_uz: string
   name_ru: string
   description: string
+  description_uz?: string
   price: number
   discounted_price?: number | null
   image_url: string
