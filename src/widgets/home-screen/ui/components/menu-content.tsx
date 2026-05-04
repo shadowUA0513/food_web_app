@@ -7,12 +7,17 @@ import {
   Image,
   Loader,
   Paper,
+  SegmentedControl,
   SimpleGrid,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
-import { IconShoppingBagPlus, IconUserCircle } from "@tabler/icons-react";
+import {
+  IconMapPin,
+  IconShoppingBagPlus,
+  IconUserCircle,
+} from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
@@ -33,6 +38,7 @@ import { useCompanySettings } from "../../../../service/settings";
 interface MenuContentProps {
   locale: Locale;
   settings?: CompanySettings;
+  userName?: string;
   visibleCategories: MenuCategoryWithProducts[];
   isLoading: boolean;
   isError: boolean;
@@ -44,6 +50,7 @@ interface MenuContentProps {
   textColor: string;
   mutedBg: string;
   onOpenSettings: () => void;
+  onLocaleChange: (locale: Locale) => void;
   onOpenProduct: (product: Product) => void;
   onAddToCart: (product: Product) => void;
   getLocalizedValue: (nameUz: string, nameRu: string) => string;
@@ -51,7 +58,9 @@ interface MenuContentProps {
 }
 
 export function MenuContent({
+  locale,
   settings,
+  userName,
   visibleCategories,
   isLoading,
   isError,
@@ -63,6 +72,7 @@ export function MenuContent({
   textColor,
   mutedBg,
   onOpenSettings,
+  onLocaleChange,
   onOpenProduct,
   onAddToCart,
   getLocalizedValue,
@@ -70,7 +80,7 @@ export function MenuContent({
 }: MenuContentProps) {
   const { t } = useTranslation();
   const { brandColor } = useBrandTheme();
-  const headerHeight = 104;
+  const headerHeight = 164;
   const headerOffset = 14;
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const companyId = getCompanyId();
@@ -139,67 +149,145 @@ export function MenuContent({
             zIndex: 120,
           }}
         >
-          <Paper
-            radius={24}
-            p="md"
-            style={{
-              background: surfaceBg,
-              border: isDark
-                ? "1px solid rgba(255,255,255,0.06)"
-                : "1px solid rgba(255,255,255,0.85)",
-              boxShadow: isDark
-                ? "0 14px 34px rgba(0, 0, 0, 0.28)"
-                : "0 12px 28px rgba(15, 23, 42, 0.06)",
-              backdropFilter: "blur(18px)",
-            }}
-          >
-            <Group justify="space-between" align="center" wrap="nowrap">
-              <Group gap="sm" wrap="nowrap">
-                {settings?.logo_url ? (
-                  <Image
-                    src={settings.logo_url}
-                    alt={settings.name}
-                    w={44}
-                    h={44}
-                    radius="xl"
-                    fit="cover"
-                  />
-                ) : null}
-                <Stack gap={2}>
-                  <Title order={1} fz="1.2rem" fw={900} lh={1.1} c={titleColor}>
+          <Stack gap={10}>
+            <Paper
+              radius={24}
+              p="md"
+              style={{
+                background: surfaceBg,
+                border: isDark
+                  ? "1px solid rgba(255,255,255,0.06)"
+                  : "1px solid rgba(255,255,255,0.85)",
+                boxShadow: isDark
+                  ? "0 14px 34px rgba(0, 0, 0, 0.28)"
+                  : "0 12px 28px rgba(15, 23, 42, 0.06)",
+                backdropFilter: "blur(18px)",
+              }}
+            >
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                  {settings?.logo_url ? (
+                    <Image
+                      src={settings.logo_url}
+                      alt={settings.name}
+                      w={48}
+                      h={48}
+                      radius="xl"
+                      fit="cover"
+                    />
+                  ) : null}
+                  <Title
+                    order={1}
+                    fz="1.15rem"
+                    fw={500}
+                    lh={1.1}
+                    c={titleColor}
+                    style={{ letterSpacing: "-0.03em" }}
+                  >
                     {settings?.name ?? t("menu.titleFallback")}
                   </Title>
-                  <Text size="sm" c={textColor}>
-                    {t("menu.subtitle")}
-                  </Text>
-                </Stack>
-              </Group>
+                </Group>
 
-              <ActionIcon
-                size={42}
-                radius="xl"
-                variant="subtle"
-                onClick={onOpenSettings}
-                color={isDark ? "gray" : "dark"}
-                style={{
-                  background: isDark
-                    ? "rgba(255,255,255,0.05)"
-                    : "rgba(15,23,42,0.05)",
-                }}
-              >
-                <IconUserCircle size={24} />
-              </ActionIcon>
-            </Group>
-          </Paper>
+                <SegmentedControl
+                  radius="xl"
+                  size="xs"
+                  value={locale}
+                  onChange={(value) => onLocaleChange(value as Locale)}
+                  data={[
+                    { label: "UZ", value: "uz" },
+                    { label: "RU", value: "ru" },
+                  ]}
+                  styles={{
+                    root: {
+                      background: isDark ? "#252b35" : "#eff2f6",
+                      padding: 4,
+                    },
+                    indicator: {
+                      background: isDark ? "#343b48" : "#ffffff",
+                      boxShadow: isDark
+                        ? "0 3px 10px rgba(0,0,0,0.22)"
+                        : "0 2px 8px rgba(15,23,42,0.08)",
+                    },
+                    label: {
+                      minHeight: 30,
+                      minWidth: 42,
+                      paddingInline: 10,
+                      fontSize: "0.76rem",
+                      fontWeight: 800,
+                      color: isDark ? "#d9dee7" : textColor,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      letterSpacing: "0.01em",
+                    },
+                  }}
+                />
+              </Group>
+            </Paper>
+
+            <Paper
+              radius={24}
+              px="md"
+              py={12}
+              style={{
+                background: surfaceBg,
+                border: isDark
+                  ? "1px solid rgba(255,255,255,0.06)"
+                  : "1px solid rgba(255,255,255,0.85)",
+                boxShadow: isDark
+                  ? "0 12px 28px rgba(0, 0, 0, 0.22)"
+                  : "0 10px 24px rgba(15, 23, 42, 0.05)",
+              }}
+            >
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                  <Center
+                    w={42}
+                    h={42}
+                    style={{
+                      borderRadius: 999,
+                      background: isDark
+                        ? "rgba(255,255,255,0.06)"
+                        : "#f2f4f7",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <IconMapPin size={20} color={titleColor} stroke={1.9} />
+                  </Center>
+
+                  <Stack gap={0} style={{ minWidth: 0 }}>
+                    <Text fw={800} fz="1rem" c={titleColor} truncate>
+                      {userName || t("menu.titleFallback")}
+                    </Text>
+                    <Text size="xs" c={textColor} truncate>
+                      {t("menu.subtitle")}
+                    </Text>
+                  </Stack>
+                </Group>
+
+                <ActionIcon
+                  size={44}
+                  radius="xl"
+                  variant="filled"
+                  onClick={onOpenSettings}
+                  aria-label={t("settings.title")}
+                  style={{
+                    background: brandColor,
+                    color: "#141414",
+                    boxShadow: isDark
+                      ? `0 10px 20px ${hexToRgba(brandColor, 0.24)}`
+                      : `0 10px 20px ${hexToRgba(brandColor, 0.2)}`,
+                    flexShrink: 0,
+                  }}
+                >
+                  <IconUserCircle size={24} />
+                </ActionIcon>
+              </Group>
+            </Paper>
+          </Stack>
         </Box>
 
         <Box h={headerHeight} />
-
-        <Group gap="xs" justify="space-between">
-          <Text size="sm" fw={700} c={textColor}>
-            {t("menu.categories")}
-          </Text>
-        </Group>
 
         {!isLoading && !isError && visibleCategoriesWithProducts.length > 0 ? (
           <Box

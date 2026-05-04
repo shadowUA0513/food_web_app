@@ -179,6 +179,7 @@ export function HomeScreen() {
         <MenuContent
           locale={locale}
           settings={settings}
+          userName={telegramUser?.FullName}
           visibleCategories={visibleCategories}
           isLoading={isLoading}
           isError={isError}
@@ -190,6 +191,9 @@ export function HomeScreen() {
           textColor={textColor}
           mutedBg={mutedBg}
           onOpenSettings={openSettings}
+          onLocaleChange={(nextLocale) => {
+            void i18n.changeLanguage(nextLocale);
+          }}
           onOpenProduct={openProductPage}
           onAddToCart={addProductToCart}
           getLocalizedValue={getLocalizedValue}
