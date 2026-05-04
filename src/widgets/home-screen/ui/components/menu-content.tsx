@@ -13,11 +13,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import {
-  IconMapPin,
-  IconShoppingBagPlus,
-  IconUserCircle,
-} from "@tabler/icons-react";
+import { IconShoppingBagPlus } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
@@ -34,6 +30,7 @@ import {
   isCompanyOpen,
 } from "../home-utils";
 import { useCompanySettings } from "../../../../service/settings";
+import { ProfilePopover } from "./profile-popover";
 
 interface MenuContentProps {
   locale: Locale;
@@ -49,8 +46,11 @@ interface MenuContentProps {
   titleColor: string;
   textColor: string;
   mutedBg: string;
-  onOpenSettings: () => void;
+  userSubtitle?: string;
+  phoneNumbers?: string[];
   onLocaleChange: (locale: Locale) => void;
+  onToggleDarkMode: (enabled: boolean) => void;
+  onOpenOrderHistory?: () => void;
   onOpenProduct: (product: Product) => void;
   onAddToCart: (product: Product) => void;
   getLocalizedValue: (nameUz: string, nameRu: string) => string;
@@ -71,8 +71,11 @@ export function MenuContent({
   titleColor,
   textColor,
   mutedBg,
-  onOpenSettings,
+  userSubtitle,
+  phoneNumbers,
   onLocaleChange,
+  onToggleDarkMode,
+  onOpenOrderHistory,
   onOpenProduct,
   onAddToCart,
   getLocalizedValue,
@@ -80,8 +83,8 @@ export function MenuContent({
 }: MenuContentProps) {
   const { t } = useTranslation();
   const { brandColor } = useBrandTheme();
-  const headerHeight = 164;
-  const headerOffset = 14;
+  const headerHeight = 126;
+  const headerOffset = 10;
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const companyId = getCompanyId();
   const { data: companySettings } = useCompanySettings(companyId);
@@ -136,7 +139,7 @@ export function MenuContent({
   }
 
   return (
-    <Box mih="100dvh" bg={isDark ? pageBg : "#ffffff"} px={12} py={14}>
+    <Box mih="100dvh" bg={isDark ? pageBg : "#ffffff"} px={12} py={10}>
       <Stack maw={TELEGRAM_MOBILE_WIDTH} mx="auto" gap="lg">
         <Box
           style={{
@@ -149,38 +152,39 @@ export function MenuContent({
             zIndex: 120,
           }}
         >
-          <Stack gap={10}>
+          <Stack gap={8}>
             <Paper
-              radius={24}
-              p="md"
+              radius={18}
+              px={12}
+              py={10}
               style={{
                 background: surfaceBg,
                 border: isDark
                   ? "1px solid rgba(255,255,255,0.06)"
                   : "1px solid rgba(255,255,255,0.85)",
                 boxShadow: isDark
-                  ? "0 14px 34px rgba(0, 0, 0, 0.28)"
-                  : "0 12px 28px rgba(15, 23, 42, 0.06)",
-                backdropFilter: "blur(18px)",
+                  ? "0 10px 24px rgba(0, 0, 0, 0.24)"
+                  : "0 8px 20px rgba(15, 23, 42, 0.05)",
+                backdropFilter: "blur(14px)",
               }}
             >
               <Group justify="space-between" align="center" wrap="nowrap">
-                <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                <Group gap={10} wrap="nowrap" style={{ minWidth: 0 }}>
                   {settings?.logo_url ? (
                     <Image
                       src={settings.logo_url}
                       alt={settings.name}
-                      w={48}
-                      h={48}
-                      radius="xl"
+                      w={38}
+                      h={38}
+                      radius={12}
                       fit="cover"
                     />
                   ) : null}
                   <Title
                     order={1}
-                    fz="1.15rem"
+                    fz="1rem"
                     fw={500}
-                    lh={1.1}
+                    lh={1}
                     c={titleColor}
                     style={{ letterSpacing: "-0.03em" }}
                   >
@@ -200,7 +204,7 @@ export function MenuContent({
                   styles={{
                     root: {
                       background: isDark ? "#252b35" : "#eff2f6",
-                      padding: 4,
+                      padding: 3,
                     },
                     indicator: {
                       background: isDark ? "#343b48" : "#ffffff",
@@ -209,10 +213,10 @@ export function MenuContent({
                         : "0 2px 8px rgba(15,23,42,0.08)",
                     },
                     label: {
-                      minHeight: 30,
-                      minWidth: 42,
-                      paddingInline: 10,
-                      fontSize: "0.76rem",
+                      minHeight: 26,
+                      minWidth: 36,
+                      paddingInline: 8,
+                      fontSize: "0.68rem",
                       fontWeight: 800,
                       color: isDark ? "#d9dee7" : textColor,
                       display: "flex",
@@ -226,48 +230,44 @@ export function MenuContent({
             </Paper>
 
             <Paper
-              radius={24}
-              px="md"
-              py={12}
+              radius={18}
+              px={12}
+              py={8}
               style={{
                 background: surfaceBg,
                 border: isDark
                   ? "1px solid rgba(255,255,255,0.06)"
                   : "1px solid rgba(255,255,255,0.85)",
                 boxShadow: isDark
-                  ? "0 12px 28px rgba(0, 0, 0, 0.22)"
-                  : "0 10px 24px rgba(15, 23, 42, 0.05)",
+                  ? "0 9px 20px rgba(0, 0, 0, 0.18)"
+                  : "0 7px 18px rgba(15, 23, 42, 0.04)",
               }}
             >
               <Group justify="space-between" align="center" wrap="nowrap">
-                <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                <Group gap={8} wrap="nowrap" style={{ minWidth: 0 }}>
                   <Stack gap={0} style={{ minWidth: 0 }}>
-                    <Text fw={800} fz="1rem" c={titleColor} truncate>
+                    <Text fw={800} fz="0.9rem" c={titleColor} truncate>
                       {userName || t("menu.titleFallback")}
                     </Text>
-                    <Text size="xs" c={textColor} truncate>
+                    <Text fz="0.68rem" c={textColor} truncate>
                       {t("menu.subtitle")}
                     </Text>
                   </Stack>
                 </Group>
 
-                <ActionIcon
-                  size={44}
-                  radius="xl"
-                  variant="filled"
-                  onClick={onOpenSettings}
-                  aria-label={t("settings.title")}
-                  style={{
-                    background: brandColor,
-                    color: "#141414",
-                    boxShadow: isDark
-                      ? `0 10px 20px ${hexToRgba(brandColor, 0.24)}`
-                      : `0 10px 20px ${hexToRgba(brandColor, 0.2)}`,
-                    flexShrink: 0,
-                  }}
-                >
-                  <IconUserCircle size={24} />
-                </ActionIcon>
+                <ProfilePopover
+                  locale={locale}
+                  onLocaleChange={onLocaleChange}
+                  isDark={isDark}
+                  onToggleDarkMode={onToggleDarkMode}
+                  brandColor={brandColor}
+                  titleColor={titleColor}
+                  textColor={textColor}
+                  userName={userName}
+                  userSubtitle={userSubtitle}
+                  phoneNumbers={phoneNumbers}
+                  onOpenOrderHistory={onOpenOrderHistory}
+                />
               </Group>
             </Paper>
           </Stack>
