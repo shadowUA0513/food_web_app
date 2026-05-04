@@ -132,6 +132,7 @@ const resources = {
       },
       menu: {
         titleFallback: "Taomlar menyusi",
+        userFallback: "Foydalanuvchi",
         subtitle: "Taomlarni tez tanlang",
         categories: "Kategoriyalar",
         loadError: "Menyuni yuklab bo'lmadi",
@@ -288,6 +289,7 @@ const resources = {
       },
       menu: {
         titleFallback: "Меню",
+        userFallback: "Пользователь",
         subtitle: "Быстро выбирайте блюда",
         categories: "Категории",
         loadError: "Не удалось загрузить меню",
