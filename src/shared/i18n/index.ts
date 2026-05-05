@@ -6,6 +6,9 @@ const resources = {
     translation: {
       settings: {
         title: "Sozlamalar",
+        userInfo: "Foydalanuvchi ma'lumotlari",
+        ordersSection: "Buyurtmalar",
+        profileSection: "Profil",
         language: "Til",
         chooseLanguage: "Ilova tilini tanlang",
         phoneNumbers: "Telefon raqamlari",
@@ -132,6 +135,7 @@ const resources = {
       },
       menu: {
         titleFallback: "Taomlar menyusi",
+        userFallback: "Foydalanuvchi",
         subtitle: "Taomlarni tez tanlang",
         categories: "Kategoriyalar",
         loadError: "Menyuni yuklab bo'lmadi",
@@ -162,6 +166,9 @@ const resources = {
     translation: {
       settings: {
         title: "Настройки",
+        userInfo: "Информация о пользователе",
+        ordersSection: "Заказы",
+        profileSection: "Профиль",
         language: "Язык",
         chooseLanguage: "Выберите язык приложения",
         phoneNumbers: "Номера телефонов",
@@ -288,6 +295,7 @@ const resources = {
       },
       menu: {
         titleFallback: "Меню",
+        userFallback: "Пользователь",
         subtitle: "Быстро выбирайте блюда",
         categories: "Категории",
         loadError: "Не удалось загрузить меню",

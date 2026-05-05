@@ -3,7 +3,6 @@
   useComputedColorScheme,
   useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import { IconCheck } from "@tabler/icons-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +16,6 @@ import type { Product } from "../../../types/menu";
 import { CartDrawer } from "./components/cart-drawer";
 import { FloatingCartButton } from "./components/floating-cart-button";
 import { MenuContent } from "./components/menu-content";
-import { SettingsDrawer } from "./components/settings-drawer";
 import {
   formatPrice,
   getCompanyId,
@@ -27,8 +25,6 @@ import {
 import type { Locale } from "./home-screen-types";
 
 export function HomeScreen() {
-  const [settingsOpened, { open: openSettings, close: closeSettings }] =
-    useDisclosure(false);
   const { i18n, t } = useTranslation();
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
@@ -113,7 +109,6 @@ export function HomeScreen() {
   }
 
   function openOrderHistoryPage() {
-    closeSettings();
     navigate({
       pathname: "/order-history",
       search: location.search,
@@ -133,30 +128,6 @@ export function HomeScreen() {
 
   return (
     <AppShell bg={pageBg} padding={0}>
-      <SettingsDrawer
-        opened={settingsOpened}
-        onClose={closeSettings}
-        locale={locale}
-        onLocaleChange={(nextLocale) => {
-          void i18n.changeLanguage(nextLocale);
-        }}
-        isDark={isDark}
-        onToggleDarkMode={(enabled) =>
-          setColorScheme(enabled ? "dark" : "light")
-        }
-        surfaceBg={surfaceBg}
-        titleColor={titleColor}
-        textColor={textColor}
-        mutedBg={mutedBg}
-        userName={telegramUser?.FullName}
-        userSubtitle={
-          telegramUser?.PhoneNumber ||
-          (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
-        }
-        phoneNumbers={settings?.phone_numbers}
-        onOpenOrderHistory={openOrderHistoryPage}
-      />
-
       <CartDrawer
         opened={isCartOpened}
         onClose={closeCartDrawer}
@@ -179,6 +150,7 @@ export function HomeScreen() {
         <MenuContent
           locale={locale}
           settings={settings}
+          userName={telegramUser?.FullName}
           visibleCategories={visibleCategories}
           isLoading={isLoading}
           isError={isError}
@@ -189,7 +161,18 @@ export function HomeScreen() {
           titleColor={titleColor}
           textColor={textColor}
           mutedBg={mutedBg}
-          onOpenSettings={openSettings}
+          userSubtitle={
+            telegramUser?.PhoneNumber ||
+            (telegramUser?.Username ? `@${telegramUser.Username}` : undefined)
+          }
+          phoneNumbers={settings?.phone_numbers}
+          onLocaleChange={(nextLocale) => {
+            void i18n.changeLanguage(nextLocale);
+          }}
+          onToggleDarkMode={(enabled) =>
+            setColorScheme(enabled ? "dark" : "light")
+          }
+          onOpenOrderHistory={openOrderHistoryPage}
           onOpenProduct={openProductPage}
           onAddToCart={addProductToCart}
           getLocalizedValue={getLocalizedValue}
