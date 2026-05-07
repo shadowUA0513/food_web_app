@@ -26,7 +26,7 @@ import {
 } from "../../../widgets/home-screen/ui/home-utils";
 
 export function OrderHistoryPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { brandColor } = useBrandTheme();
   const computedColorScheme = useComputedColorScheme("light");
   const navigate = useNavigate();
@@ -101,6 +101,22 @@ export function OrderHistoryPage() {
     }
 
     return `${t("history.order")} ${index + 1}`;
+  }
+
+  function getItemName(
+    item: {
+      name?: string;
+      name_uz?: string;
+      name_ru?: string;
+    },
+    itemIndex: number,
+  ) {
+    const localizedName =
+      i18n.language === "uz"
+        ? item.name_uz ?? item.name_ru ?? item.name
+        : item.name_ru ?? item.name_uz ?? item.name;
+
+    return localizedName || `${t("history.item")} ${itemIndex + 1}`;
   }
 
   return (
@@ -285,7 +301,7 @@ export function OrderHistoryPage() {
                             >
                               <Stack gap={2} style={{ minWidth: 0 }}>
                                 <Text size="sm" fw={700} c={titleColor} truncate>
-                                  {item.name || `${t("history.item")} ${itemIndex + 1}`}
+                                  {getItemName(item, itemIndex)}
                                 </Text>
                                 <Text size="xs" c={textColor}>
                                   {t("history.quantity")}: {item.quantity}
