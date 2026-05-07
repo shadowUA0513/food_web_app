@@ -218,7 +218,7 @@ const resources = {
         paymentTitle: "Способ оплаты",
         paymentDescription: "Выберите удобный способ оплаты.",
         paymentCash: "Наличные",
-        paymentCard: "Номер карты",
+        paymentCard: "перевод на карту",
         paymentCashHint: "Оплатите наличными при получении заказа.",
         paymentCardHint: "Оплатите на один из номеров карт ниже.",
         paymentCardNumbers: "Номера карт",
