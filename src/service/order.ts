@@ -16,6 +16,10 @@ interface ApiErrorResponse {
   message?: string;
 }
 
+function getStringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   const axiosError = error as AxiosError<ApiErrorResponse>;
   return axiosError.response?.data?.message ?? fallback;
@@ -76,13 +80,29 @@ function normalizeOrderHistoryItem(raw: unknown): OrderHistoryItem | null {
   }
 
   const source = raw as Record<string, unknown>;
+  const product =
+    source.product && typeof source.product === "object"
+      ? (source.product as Record<string, unknown>)
+      : null;
   const quantity = Number(source.quantity ?? source.count ?? 0);
   const priceRaw = source.price ?? source.total_price ?? source.amount;
   const price = Number(priceRaw);
+  const nameUz = getStringValue(source.name_uz) ?? getStringValue(product?.name_uz);
+  const nameRu = getStringValue(source.name_ru) ?? getStringValue(product?.name_ru);
+  const name =
+    getStringValue(source.name) ??
+    getStringValue(source.product_name) ??
+    getStringValue(source.title) ??
+    nameRu ??
+    nameUz ??
+    getStringValue(product?.name) ??
+    getStringValue(product?.title);
 
   return {
     product_id: String(source.product_id ?? source.productId ?? source.id ?? ""),
-    name: String(source.name ?? source.product_name ?? source.title ?? "") || undefined,
+    name,
+    name_uz: nameUz,
+    name_ru: nameRu,
     quantity: Number.isFinite(quantity) ? quantity : 0,
     price: Number.isFinite(price) ? price : undefined,
   };

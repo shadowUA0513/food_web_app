@@ -1,6 +1,8 @@
 export interface OrderHistoryItem {
   product_id: string;
   name?: string;
+  name_uz?: string;
+  name_ru?: string;
   quantity: number;
   price?: number;
 }
