@@ -11,6 +11,7 @@ import {
   Loader,
   Modal,
   Paper,
+  Popover,
   SegmentedControl,
   Stack,
   Text,
@@ -27,6 +28,7 @@ import {
   IconCopy,
   IconCreditCard,
   IconFileDescription,
+  IconHelpCircle,
   IconPhoto,
   IconInfoCircle,
   IconTrash,
@@ -1065,11 +1067,56 @@ export function CheckoutPage() {
                         }}
                       >
                         <Stack gap="sm">
-                          <Text fw={700} c={titleColor}>
-                            {t("checkout.paymentCardNumbers")}
-                          </Text>
+                          <Group gap={6} align="center" wrap="nowrap">
+                            <Text fw={700} c={titleColor}>
+                              {t("checkout.paymentCardNumbers")}
+                            </Text>
+                            <Popover
+                              width={280}
+                              position="bottom-start"
+                              withArrow
+                              shadow="md"
+                            >
+                              <Popover.Target>
+                                <ActionIcon
+                                  variant="subtle"
+                                  color="gray"
+                                  radius="xl"
+                                  size={24}
+                                  aria-label={t("checkout.paymentCardHelpLabel")}
+                                >
+                                  <IconHelpCircle size={16} />
+                                </ActionIcon>
+                              </Popover.Target>
+                              <Popover.Dropdown>
+                                <Stack gap={6}>
+                                  <Text size="sm" fw={700} c={titleColor}>
+                                    {t("checkout.paymentCardHelpTitle")}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t("checkout.paymentCardInstruction1")}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t("checkout.paymentCardInstruction2")}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t("checkout.paymentCardInstruction3")}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t("checkout.paymentCardInstruction4")}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t("checkout.paymentCardInstruction5")}
+                                  </Text>
+                                </Stack>
+                              </Popover.Dropdown>
+                            </Popover>
+                          </Group>
                           <Text size="sm" c={textColor}>
                             {t("checkout.paymentCardHint")}
+                          </Text>
+                          <Text size="sm" c={textColor}>
+                            {t("checkout.paymentCardHelperText")}
                           </Text>
                           <Stack gap="xs">
                             {cardPans.map((cardPan) => (
