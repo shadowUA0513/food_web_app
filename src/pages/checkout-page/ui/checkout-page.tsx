@@ -40,7 +40,10 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../app/theme/theme";
-import { useCreateCompanyOrder } from "../../../service/order";
+import {
+  useCompanyCheckoutQuote,
+  useCreateCompanyOrder,
+} from "../../../service/order";
 import { useCompanyPartners } from "../../../service/partners";
 import { useCompanySettings } from "../../../service/settings";
 import { useTelegramUser } from "../../../service/telegram-user";
@@ -55,7 +58,10 @@ import {
   getPartnerId,
   getTelegramId,
 } from "../../../widgets/home-screen/ui/home-utils";
-import type { CreateOrderPayload } from "../../../types/order";
+import type {
+  CheckoutQuoteItemPayload,
+  CreateOrderPayload,
+} from "../../../types/order";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
 import clickLogo from "../../../assets/click.png";
@@ -125,6 +131,25 @@ export function CheckoutPage() {
       ),
     [cartList],
   );
+  const checkoutItemsPayload = useMemo<CheckoutQuoteItemPayload[]>(
+    () =>
+      cartList.map(({ product, count }) => ({
+        product_id: product.id,
+        quantity: count,
+        price: getDiscountedPrice(product),
+      })),
+    [cartList],
+  );
+  const {
+    data: checkoutQuote,
+    isLoading: isCheckoutQuoteLoading,
+    isError: isCheckoutQuoteError,
+  } = useCompanyCheckoutQuote({
+    companyId,
+    payload: {
+      items: checkoutItemsPayload,
+    },
+  });
   const supportedOrderTypes = useMemo(() => {
     const apiTypes = settings?.supported_order_types?.filter(
       (type): type is OrderType =>
@@ -152,6 +177,10 @@ export function CheckoutPage() {
     paymentType === "payme" ||
     paymentType === "click" ||
     (!isOfficialPaymentStyle && paymentType === "card");
+  const summarySubtotal = checkoutQuote?.subtotal ?? cartTotalPrice;
+  const summaryShippingCost = checkoutQuote?.shipping_cost ?? 0;
+  const summaryFinalTotal = checkoutQuote?.final_total ?? cartTotalPrice;
+  const deliveryEstimatedTime = checkoutQuote?.delivery_estimated_time;
 
   useEffect(() => {
     if (!selectedOrderTypeSupported) {
@@ -236,6 +265,38 @@ export function CheckoutPage() {
 
   function getLocalizedValue(nameUz: string, nameRu: string) {
     return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
+  }
+
+  function formatDeliveryEstimatedTime(minutes?: number | null) {
+    if (!Number.isFinite(minutes) || !minutes || minutes <= 0) {
+      return null;
+    }
+
+    const totalMinutes = Math.round(minutes);
+    const hours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+
+    if (locale === "uz") {
+      if (hours > 0 && remainingMinutes > 0) {
+        return `${hours} soat ${remainingMinutes} daqiqa`;
+      }
+
+      if (hours > 0) {
+        return `${hours} soat`;
+      }
+
+      return `${remainingMinutes} daqiqa`;
+    }
+
+    if (hours > 0 && remainingMinutes > 0) {
+      return `${hours} ч ${remainingMinutes} мин`;
+    }
+
+    if (hours > 0) {
+      return `${hours} ч`;
+    }
+
+    return `${remainingMinutes} мин`;
   }
 
   function getPartnerLabel(partner: Partner) {
@@ -349,11 +410,7 @@ export function CheckoutPage() {
       user_id: telegramUserId,
       payment_type: paymentType === "card" ? "card" : paymentType,
       comment: comment.trim() || undefined,
-      items: cartList.map(({ product, count }) => ({
-        product_id: product.id,
-        quantity: count,
-        price: getDiscountedPrice(product),
-      })),
+      items: checkoutItemsPayload,
     };
 
     if (partnerId) {
@@ -1228,6 +1285,37 @@ export function CheckoutPage() {
 
                     <Divider color={isDark ? "dark.3" : "gray.3"} />
 
+                    <Stack gap={8}>
+                      <Group justify="space-between" align="center">
+                        <Text fw={600} c={textColor}>
+                          {t("checkout.subtotal")}
+                        </Text>
+                        <Text fw={700} c={titleColor}>
+                          {formatPrice(summarySubtotal)}
+                        </Text>
+                      </Group>
+
+                      <Group justify="space-between" align="center">
+                        <Text fw={600} c={textColor}>
+                          {t("checkout.shippingCost")}
+                        </Text>
+                        <Text fw={700} c={titleColor}>
+                          {formatPrice(summaryShippingCost)}
+                        </Text>
+                      </Group>
+
+                      {typeof deliveryEstimatedTime === "number" ? (
+                        <Group justify="space-between" align="center">
+                          <Text fw={600} c={textColor}>
+                            {t("checkout.deliveryEstimatedTime")}
+                          </Text>
+                          <Text fw={700} c={titleColor}>
+                            {formatDeliveryEstimatedTime(deliveryEstimatedTime)}
+                          </Text>
+                        </Group>
+                      ) : null}
+                    </Stack>
+
                     <Group
                       justify="space-between"
                       p="md"
@@ -1240,9 +1328,21 @@ export function CheckoutPage() {
                         {t("checkout.total")}
                       </Text>
                       <Text fw={900} fz="1.1rem" c={titleColor}>
-                        {formatPrice(cartTotalPrice)}
+                        {formatPrice(summaryFinalTotal)}
                       </Text>
                     </Group>
+
+                    {isCheckoutQuoteLoading ? (
+                      <Text size="sm" c={textColor}>
+                        {t("checkout.summaryLoading")}
+                      </Text>
+                    ) : null}
+
+                    {isCheckoutQuoteError ? (
+                      <Text size="sm" c="red.6">
+                        {t("checkout.summaryLoadError")}
+                      </Text>
+                    ) : null}
 
                     {minOrderAmount > 0 ? (
                       <Text

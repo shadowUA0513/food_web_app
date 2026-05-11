@@ -4,6 +4,23 @@ export interface CreateOrderItemPayload {
   price: number;
 }
 
+export interface CheckoutQuoteItemPayload {
+  product_id: string;
+  quantity: number;
+  price: number;
+}
+
+export interface CheckoutQuotePayload {
+  items: CheckoutQuoteItemPayload[];
+}
+
+export interface CheckoutQuoteData {
+  subtotal: number;
+  shipping_cost: number;
+  final_total: number;
+  delivery_estimated_time: number;
+}
+
 export interface CreateOrderPayload {
   company_id: string;
   partner_id?: string;
@@ -32,4 +49,9 @@ export interface CreateOrderResponse {
   data?: {
     order?: Order;
   };
+}
+
+export interface CheckoutQuoteResponse {
+  error: boolean;
+  data?: CheckoutQuoteData;
 }
