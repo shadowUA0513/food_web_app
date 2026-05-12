@@ -2,6 +2,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { api } from "./api";
 import type {
+  CheckoutQuoteData,
+  CheckoutQuotePayload,
+  CheckoutQuoteResponse,
   CreateOrderPayload,
   CreateOrderResponse,
   Order,
@@ -61,6 +64,44 @@ export async function createCompanyOrder({
 export function useCreateCompanyOrder() {
   return useMutation({
     mutationFn: createCompanyOrder,
+  });
+}
+
+interface CompanyCheckoutQuoteParams {
+  companyId?: string;
+  payload: CheckoutQuotePayload;
+}
+
+export async function getCompanyCheckoutQuote({
+  companyId,
+  payload,
+}: CompanyCheckoutQuoteParams) {
+  if (!companyId || payload.items.length === 0) {
+    return null;
+  }
+
+  try {
+    const { data } = await api.post<CheckoutQuoteResponse>(
+      `/api/v1/twa/company/${companyId}/checkout`,
+      payload,
+    );
+
+    return (data.data ?? null) as CheckoutQuoteData | null;
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Failed to load checkout summary."));
+  }
+}
+
+export function useCompanyCheckoutQuote(params: CompanyCheckoutQuoteParams) {
+  const { companyId, payload } = params;
+
+  return useQuery({
+    queryKey: ["company-checkout-quote", companyId, payload.items],
+    queryFn: () => getCompanyCheckoutQuote(params),
+    enabled: Boolean(companyId && payload.items.length > 0),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
   });
 }
 
