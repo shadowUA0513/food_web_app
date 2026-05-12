@@ -5,6 +5,8 @@ export interface WorkingHours {
   is_active: boolean;
 }
 
+export type PaymentAcceptingStyle = "o" | "non-o";
+
 export interface CompanySettings {
   id: string
   name: string
@@ -12,7 +14,7 @@ export interface CompanySettings {
   logo_url: string
   min_order_amount?: number
   supported_order_types?: string[]
-  payment_accepting_style?: string
+  payment_accepting_style?: PaymentAcceptingStyle
   card_pans?: string[]
   phone_numbers?: string[]
   today_working_hours?: WorkingHours | null;

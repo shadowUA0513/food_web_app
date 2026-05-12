@@ -174,9 +174,7 @@ export function CheckoutPage() {
   );
   const selectedOrderTypeSupported = supportedOrderTypes.includes(orderType);
   const requiresPaymentProof =
-    paymentType === "payme" ||
-    paymentType === "click" ||
-    (!isOfficialPaymentStyle && paymentType === "card");
+    paymentType === "card" && !isOfficialPaymentStyle;
   const summarySubtotal = checkoutQuote?.subtotal ?? cartTotalPrice;
   const summaryShippingCost = checkoutQuote?.shipping_cost ?? 0;
   const summaryFinalTotal = checkoutQuote?.final_total ?? cartTotalPrice;
@@ -1141,7 +1139,9 @@ export function CheckoutPage() {
                                   color="gray"
                                   radius="xl"
                                   size={24}
-                                  aria-label={t("checkout.paymentCardHelpLabel")}
+                                  aria-label={t(
+                                    "checkout.paymentCardHelpLabel",
+                                  )}
                                 >
                                   <IconHelpCircle size={16} />
                                 </ActionIcon>

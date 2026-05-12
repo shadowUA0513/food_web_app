@@ -32,7 +32,7 @@ function normalizeCompanySettings(raw: unknown): PartialCompanySettings | null {
       )
     : undefined
   const paymentAcceptingStyle =
-    typeof source.payment_accepting_style === 'string'
+    source.payment_accepting_style === 'o' || source.payment_accepting_style === 'non-o'
       ? source.payment_accepting_style
       : undefined
   const cardPans = Array.isArray(source.card_pans)
