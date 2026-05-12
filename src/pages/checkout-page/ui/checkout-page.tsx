@@ -408,6 +408,7 @@ export function CheckoutPage() {
       delivery_address:
         orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
       user_id: telegramUserId,
+      phone_number: telegramUser?.PhoneNumber?.trim() || undefined,
       payment_type: paymentType === "card" ? "card" : paymentType,
       comment: comment.trim() || undefined,
       items: checkoutItemsPayload,

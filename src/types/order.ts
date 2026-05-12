@@ -26,6 +26,7 @@ export interface CreateOrderPayload {
   partner_id?: string;
   delivery_address: string;
   user_id: number;
+  phone_number?: string;
   payment_type: string;
   comment?: string;
   items: CreateOrderItemPayload[];
