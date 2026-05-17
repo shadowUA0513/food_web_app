@@ -7,6 +7,9 @@ import { useBrandTheme } from "../../../app/providers/brand-theme-context";
 interface DeliveryAddressPickerProps {
   value: string;
   onChange: (value: string) => void;
+  onCoordinatesChange?: (
+    coordinates: { latitude: number; longitude: number } | null,
+  ) => void;
   titleColor: string;
   textColor: string;
   surfaceBg: string;
@@ -73,6 +76,7 @@ async function reverseGeocodeWithNominatim(
 export function DeliveryAddressPicker({
   value,
   onChange,
+  onCoordinatesChange,
   titleColor,
   textColor,
   surfaceBg,
@@ -123,16 +127,19 @@ export function DeliveryAddressPicker({
         if (!address) {
           setMapError(t("checkout.addressNotFound"));
           onChange("");
+          onCoordinatesChange?.(null);
           return;
         }
 
         updatePlacemark(latitude, longitude, address);
         onChange(address);
+        onCoordinatesChange?.({ latitude, longitude });
         setMapError(null);
       })
       .catch(() => {
         setMapError(t("checkout.addressNotFound"));
         onChange("");
+        onCoordinatesChange?.(null);
       })
       .finally(() => {
         setIsResolvingAddress(false);

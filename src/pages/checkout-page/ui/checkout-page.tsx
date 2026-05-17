@@ -16,6 +16,7 @@ import {
   Stack,
   Text,
   Textarea,
+  TextInput,
   Title,
   useComputedColorScheme,
   useMantineColorScheme,
@@ -93,7 +94,12 @@ export function CheckoutPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const [comment, setComment] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryCoordinates, setDeliveryCoordinates] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentType>("cash");
+  const [paymentPhoneNumber, setPaymentPhoneNumber] = useState("");
   const [
     paymentProofOpened,
     { open: openPaymentProof, close: closePaymentProof },
@@ -148,6 +154,12 @@ export function CheckoutPage() {
     companyId,
     payload: {
       items: checkoutItemsPayload,
+      ...(orderType === "delivery-anywhere" && deliveryCoordinates
+        ? {
+            customer_lat: deliveryCoordinates.latitude,
+            customer_long: deliveryCoordinates.longitude,
+          }
+        : {}),
     },
   });
   const supportedOrderTypes = useMemo(() => {
@@ -174,9 +186,9 @@ export function CheckoutPage() {
   );
   const selectedOrderTypeSupported = supportedOrderTypes.includes(orderType);
   const requiresPaymentProof =
-    paymentType === "payme" ||
-    paymentType === "click" ||
-    (!isOfficialPaymentStyle && paymentType === "card");
+    paymentType === "card" && !isOfficialPaymentStyle;
+  const requiresPaymentPhone =
+    paymentType === "payme" || paymentType === "click";
   const summarySubtotal = checkoutQuote?.subtotal ?? cartTotalPrice;
   const summaryShippingCost = checkoutQuote?.shipping_cost ?? 0;
   const summaryFinalTotal = checkoutQuote?.final_total ?? cartTotalPrice;
@@ -206,6 +218,16 @@ export function CheckoutPage() {
       URL.revokeObjectURL(objectUrl);
     };
   }, [paymentProofFile]);
+
+  useEffect(() => {
+    if (!telegramUser?.PhoneNumber) {
+      return;
+    }
+
+    setPaymentPhoneNumber((current) =>
+      current.trim() ? current : telegramUser.PhoneNumber.trim(),
+    );
+  }, [telegramUser?.PhoneNumber]);
 
   const isDark = computedColorScheme === "dark";
   const pageBg = isDark ? "#111318" : "#f3f4f6";
@@ -387,6 +409,15 @@ export function CheckoutPage() {
       return false;
     }
 
+    if (requiresPaymentPhone && !paymentPhoneNumber.trim()) {
+      showAppNotification({
+        title: t("checkout.validationPhone"),
+        color: "red",
+        icon: <IconInfoCircle size={18} />,
+      });
+      return false;
+    }
+
     return true;
   }
 
@@ -408,6 +439,11 @@ export function CheckoutPage() {
       delivery_address:
         orderType === "delivery-anywhere" ? deliveryAddress.trim() : "",
       user_id: telegramUserId,
+      phone_number: (
+        requiresPaymentPhone
+          ? paymentPhoneNumber
+          : telegramUser?.PhoneNumber ?? paymentPhoneNumber
+      ).trim() || undefined,
       payment_type: paymentType === "card" ? "card" : paymentType,
       comment: comment.trim() || undefined,
       items: checkoutItemsPayload,
@@ -988,6 +1024,7 @@ export function CheckoutPage() {
                       <DeliveryAddressPicker
                         value={deliveryAddress}
                         onChange={setDeliveryAddress}
+                        onCoordinatesChange={setDeliveryCoordinates}
                         titleColor={titleColor}
                         textColor={textColor}
                         surfaceBg={surfaceBg}
@@ -1140,7 +1177,9 @@ export function CheckoutPage() {
                                   color="gray"
                                   radius="xl"
                                   size={24}
-                                  aria-label={t("checkout.paymentCardHelpLabel")}
+                                  aria-label={t(
+                                    "checkout.paymentCardHelpLabel",
+                                  )}
                                 >
                                   <IconHelpCircle size={16} />
                                 </ActionIcon>
@@ -1234,6 +1273,22 @@ export function CheckoutPage() {
                     <Title order={4} c={titleColor}>
                       {t("checkout.contactTitle")}
                     </Title>
+                    {requiresPaymentPhone ? (
+                      <TextInput
+                        label={t("checkout.phoneLabel")}
+                        placeholder={t("checkout.phonePlaceholder")}
+                        radius="md"
+                        value={paymentPhoneNumber}
+                        onChange={(event) =>
+                          setPaymentPhoneNumber(event.currentTarget.value)
+                        }
+                        description={t(
+                          paymentType === "payme"
+                            ? "checkout.paymentPaymeHint"
+                            : "checkout.paymentClickHint",
+                        )}
+                      />
+                    ) : null}
                     <Textarea
                       label={t("checkout.commentLabel")}
                       placeholder={t("checkout.commentPlaceholder")}
