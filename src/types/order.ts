@@ -12,6 +12,8 @@ export interface CheckoutQuoteItemPayload {
 
 export interface CheckoutQuotePayload {
   items: CheckoutQuoteItemPayload[];
+  customer_lat?: number;
+  customer_long?: number;
 }
 
 export interface CheckoutQuoteData {
