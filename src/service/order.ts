@@ -17,6 +17,9 @@ import type {
 
 interface ApiErrorResponse {
   message?: string;
+  data?: {
+    message?: string;
+  };
 }
 
 function getStringValue(value: unknown) {
@@ -25,7 +28,11 @@ function getStringValue(value: unknown) {
 
 function getErrorMessage(error: unknown, fallback: string) {
   const axiosError = error as AxiosError<ApiErrorResponse>;
-  return axiosError.response?.data?.message ?? fallback;
+  return (
+    axiosError.response?.data?.message ??
+    axiosError.response?.data?.data?.message ??
+    fallback
+  );
 }
 
 interface CreateCompanyOrderRequest {
