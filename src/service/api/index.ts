@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { AUTH_COOKIE_KEY, API_TIMEOUT_MS } from "./constant";
 import { env } from "./env";
 import { clearAuthSession } from "./session";
+import { i18n } from "../../shared/i18n";
 
 function getCookie(name: string) {
   const escapedName = name.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&");
@@ -16,12 +17,32 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+function getRequestLanguage() {
+  const language = i18n.resolvedLanguage ?? i18n.language ?? "ru";
+
+  if (language === "uz" || language === "ru" || language === "en") {
+    return language;
+  }
+
+  if (language.startsWith("uz")) {
+    return "uz";
+  }
+
+  if (language.startsWith("en")) {
+    return "en";
+  }
+
+  return "ru";
+}
+
 api.interceptors.request.use((config) => {
   const token = getCookie(AUTH_COOKIE_KEY);
 
   if (token) {
     config.headers.Authorization ??= `Bearer ${token}`;
   }
+
+  config.headers["X-Language"] = getRequestLanguage();
 
   return config;
 });

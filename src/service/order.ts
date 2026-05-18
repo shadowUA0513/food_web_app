@@ -96,7 +96,13 @@ export function useCompanyCheckoutQuote(params: CompanyCheckoutQuoteParams) {
   const { companyId, payload } = params;
 
   return useQuery({
-    queryKey: ["company-checkout-quote", companyId, payload.items],
+    queryKey: [
+      "company-checkout-quote",
+      companyId,
+      payload.items,
+      payload.customer_lat ?? null,
+      payload.customer_long ?? null,
+    ],
     queryFn: () => getCompanyCheckoutQuote(params),
     enabled: Boolean(companyId && payload.items.length > 0),
     staleTime: 1000 * 30,
