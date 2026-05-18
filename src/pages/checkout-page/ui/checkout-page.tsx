@@ -150,6 +150,7 @@ export function CheckoutPage() {
     data: checkoutQuote,
     isLoading: isCheckoutQuoteLoading,
     isError: isCheckoutQuoteError,
+    error: checkoutQuoteError,
   } = useCompanyCheckoutQuote({
     companyId,
     payload: {
@@ -1395,18 +1396,9 @@ export function CheckoutPage() {
 
                     {isCheckoutQuoteError ? (
                       <Text size="sm" c="red.6">
-                        {t("checkout.summaryLoadError")}
-                      </Text>
-                    ) : null}
-
-                    {minOrderAmount > 0 ? (
-                      <Text
-                        size="sm"
-                        c={isBelowMinOrderAmount ? "red.6" : textColor}
-                      >
-                        {t("checkout.minOrderAmountHint", {
-                          amount: formatPrice(minOrderAmount),
-                        })}
+                        {checkoutQuoteError instanceof Error
+                          ? checkoutQuoteError.message
+                          : t("checkout.summaryLoadError")}
                       </Text>
                     ) : null}
 

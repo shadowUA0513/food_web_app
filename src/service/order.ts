@@ -17,6 +17,9 @@ import type {
 
 interface ApiErrorResponse {
   message?: string;
+  data?: {
+    message?: string;
+  };
 }
 
 function getStringValue(value: unknown) {
@@ -25,7 +28,11 @@ function getStringValue(value: unknown) {
 
 function getErrorMessage(error: unknown, fallback: string) {
   const axiosError = error as AxiosError<ApiErrorResponse>;
-  return axiosError.response?.data?.message ?? fallback;
+  return (
+    axiosError.response?.data?.message ??
+    axiosError.response?.data?.data?.message ??
+    fallback
+  );
 }
 
 interface CreateCompanyOrderRequest {
@@ -96,7 +103,13 @@ export function useCompanyCheckoutQuote(params: CompanyCheckoutQuoteParams) {
   const { companyId, payload } = params;
 
   return useQuery({
-    queryKey: ["company-checkout-quote", companyId, payload.items],
+    queryKey: [
+      "company-checkout-quote",
+      companyId,
+      payload.items,
+      payload.customer_lat ?? null,
+      payload.customer_long ?? null,
+    ],
     queryFn: () => getCompanyCheckoutQuote(params),
     enabled: Boolean(companyId && payload.items.length > 0),
     staleTime: 1000 * 30,
