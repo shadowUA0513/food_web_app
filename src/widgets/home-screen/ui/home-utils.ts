@@ -57,7 +57,7 @@ export function getDiscountedPrice(product: PriceWithDiscount) {
   return discountedPrice;
 }
 
-import type { CompanySettings } from "../../../types/settings";
+import type { CompanySettings, WorkingHours } from "../../../types/settings";
 
 function getQueryParam(key: string) {
   const url = new URL(window.location.href);
@@ -103,5 +103,38 @@ export function isCompanyOpen(settings?: CompanySettings): boolean {
   }
 
   return currentSeconds >= startSeconds || currentSeconds <= endSeconds;
+}
+
+function normalizeDisplayTime(value: string): string | null {
+  const [hours, minutes] = value.split(":");
+  const normalizedHours = Number(hours);
+  const normalizedMinutes = Number(minutes);
+
+  if (
+    !Number.isFinite(normalizedHours) ||
+    !Number.isFinite(normalizedMinutes)
+  ) {
+    return null;
+  }
+
+  return `${String(normalizedHours).padStart(2, "0")}:${String(
+    normalizedMinutes,
+  ).padStart(2, "0")}`;
+}
+
+export function getWorkingHoursOpeningTime(
+  workingHours?: WorkingHours | null,
+): { start: string } | null {
+  if (!workingHours?.is_active) {
+    return null;
+  }
+
+  const start = normalizeDisplayTime(workingHours.start_time);
+
+  if (!start) {
+    return null;
+  }
+
+  return { start };
 }
 

@@ -31,6 +31,7 @@ import {
   getCompanyId,
   getDiscountedPrice,
   getProductDiscount,
+  getWorkingHoursOpeningTime,
   isCompanyOpen,
 } from "../../../widgets/home-screen/ui/home-utils";
 
@@ -76,6 +77,9 @@ export function ProductDetailsPage() {
     : 0;
   const discount = activeProduct ? getProductDiscount(activeProduct) : 0;
   const discountedPrice = activeProduct ? getDiscountedPrice(activeProduct) : 0;
+  const workingHoursRange = getWorkingHoursOpeningTime(
+    companySettings?.today_working_hours,
+  );
 
   const isDark = computedColorScheme === "dark";
   const pageBg = isDark ? "#111318" : "#f3f4f6";
@@ -191,7 +195,9 @@ export function ProductDetailsPage() {
                   {t("menu.closedTitle")}
                 </Text>
                 <Text size="sm" c={textColor} mt={4}>
-                  {t("menu.closedDescription")}
+                  {workingHoursRange
+                    ? t("menu.closedHoursDescription", workingHoursRange)
+                    : t("menu.closedDescription")}
                 </Text>
               </Paper>
             ) : null}

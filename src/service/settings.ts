@@ -1,7 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { api } from './api'
-import type { CompanySettings, CompanySettingsResponse, WorkingHours } from '../types/settings'
+import type {
+  CompanySettings,
+  CompanySettingsResponse,
+  LegacyPaymentAcceptingStyle,
+  PaymentMethod,
+  WorkingHours,
+} from '../types/settings'
 
 interface ApiErrorResponse {
   message?: string
@@ -12,6 +18,36 @@ type PartialCompanySettings = Partial<CompanySettings>
 function getErrorMessage(error: unknown, fallback: string) {
   const axiosError = error as AxiosError<ApiErrorResponse>
   return axiosError.response?.data?.message ?? fallback
+}
+
+function isPaymentMethod(value: unknown): value is PaymentMethod {
+  return (
+    value === 'payme' ||
+    value === 'click' ||
+    value === 'cash' ||
+    value === 'card'
+  )
+}
+
+function getPaymentMethods(
+  paymentAcceptingStyle: unknown,
+  legacyPaymentAcceptingStyle: LegacyPaymentAcceptingStyle | undefined,
+): PaymentMethod[] | undefined {
+  if (Array.isArray(paymentAcceptingStyle)) {
+    const methods = paymentAcceptingStyle.filter(isPaymentMethod)
+
+    return methods.length > 0 ? methods : undefined
+  }
+
+  if (legacyPaymentAcceptingStyle === 'o') {
+    return ['payme', 'click', 'cash']
+  }
+
+  if (legacyPaymentAcceptingStyle === 'non-o') {
+    return ['card', 'cash']
+  }
+
+  return undefined
 }
 
 function normalizeCompanySettings(raw: unknown): PartialCompanySettings | null {
@@ -31,10 +67,14 @@ function normalizeCompanySettings(raw: unknown): PartialCompanySettings | null {
         (value): value is string => typeof value === 'string',
       )
     : undefined
-  const paymentAcceptingStyle =
+  const legacyPaymentAcceptingStyle =
     source.payment_accepting_style === 'o' || source.payment_accepting_style === 'non-o'
       ? source.payment_accepting_style
       : undefined
+  const paymentAcceptingStyle = getPaymentMethods(
+    source.payment_accepting_style,
+    legacyPaymentAcceptingStyle,
+  )
   const cardPans = Array.isArray(source.card_pans)
     ? source.card_pans
         .filter((value): value is string => typeof value === 'string')

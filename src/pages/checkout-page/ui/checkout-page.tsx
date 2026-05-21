@@ -63,6 +63,7 @@ import type {
   CheckoutQuoteItemPayload,
   CreateOrderPayload,
 } from "../../../types/order";
+import type { PaymentMethod } from "../../../types/settings";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
 import type { Partner } from "../../../types/partner";
 import clickLogo from "../../../assets/click.png";
@@ -71,7 +72,7 @@ import { DeliveryAddressPicker } from "./delivery-address-picker";
 import { PartnerMapPicker } from "./partner-map-picker";
 
 type OrderType = "delivery-to-organization" | "delivery-anywhere";
-type PaymentType = "payme" | "click" | "cash" | "card";
+type PaymentType = PaymentMethod;
 
 const DEFAULT_SUPPORTED_ORDER_TYPES: OrderType[] = [
   "delivery-to-organization",
@@ -175,7 +176,11 @@ export function CheckoutPage() {
   }, [settings?.supported_order_types]);
   const minOrderAmount = settings?.min_order_amount ?? 0;
   const isBelowMinOrderAmount = cartTotalPrice < minOrderAmount;
-  const isOfficialPaymentStyle = settings?.payment_accepting_style === "o";
+  const allowedPaymentMethods = settings?.payment_accepting_style ?? ["cash"];
+  const acceptsCash = allowedPaymentMethods.includes("cash");
+  const acceptsPayme = allowedPaymentMethods.includes("payme");
+  const acceptsClick = allowedPaymentMethods.includes("click");
+  const acceptsCard = allowedPaymentMethods.includes("card");
   const cardPans = useMemo(
     () =>
       (settings?.card_pans ?? []).map((card) => card.trim()).filter(Boolean),
@@ -186,8 +191,7 @@ export function CheckoutPage() {
     [partners, selectedPartnerId],
   );
   const selectedOrderTypeSupported = supportedOrderTypes.includes(orderType);
-  const requiresPaymentProof =
-    paymentType === "card" && !isOfficialPaymentStyle;
+  const requiresPaymentProof = paymentType === "card";
   const requiresPaymentPhone =
     paymentType === "payme" || paymentType === "click";
   const summarySubtotal = checkoutQuote?.subtotal ?? cartTotalPrice;
@@ -244,37 +248,37 @@ export function CheckoutPage() {
     label: string;
     logo?: string;
   }> = [
-    ...(isOfficialPaymentStyle
+    ...(acceptsPayme
       ? [
           {
             value: "payme" as const,
             label: "Payme",
             logo: paymeLogo,
           },
+        ]
+      : []),
+    ...(acceptsClick
+      ? [
           {
             value: "click" as const,
             label: "Click",
             logo: clickLogo,
           },
+        ]
+      : []),
+    ...(acceptsCash
+      ? [
           {
             value: "cash" as const,
             label: t("checkout.paymentCash"),
           },
         ]
       : []),
-    ...(!isOfficialPaymentStyle && cardPans.length > 0
+    ...(acceptsCard && cardPans.length > 0
       ? [
           {
             value: "card" as const,
             label: t("checkout.paymentCard"),
-          },
-        ]
-      : []),
-    ...(!isOfficialPaymentStyle
-      ? [
-          {
-            value: "cash" as const,
-            label: t("checkout.paymentCash"),
           },
         ]
       : []),
@@ -1049,9 +1053,22 @@ export function CheckoutPage() {
                       {t("checkout.paymentTitle")}
                     </Title>
 
-                    <Group grow align="stretch">
+                    <Box
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          paymentOptions.length > 1
+                            ? "repeat(2, minmax(0, 1fr))"
+                            : "minmax(0, 1fr)",
+                        gap: 16,
+                      }}
+                    >
                       {paymentOptions.map((option) => {
                         const active = paymentType === option.value;
+                        const shouldSpanFullRow =
+                          paymentOptions.length > 2 &&
+                          paymentOptions.length % 2 === 1 &&
+                          option === paymentOptions[paymentOptions.length - 1];
 
                         return (
                           <Paper
@@ -1066,6 +1083,9 @@ export function CheckoutPage() {
                               flex: 1,
                               minHeight: 108,
                               textAlign: "center",
+                              gridColumn: shouldSpanFullRow
+                                ? "1 / -1"
+                                : undefined,
                               background: active
                                 ? hexToRgba(brandScale[1], isDark ? 0.22 : 0.55)
                                 : mutedBg,
@@ -1150,7 +1170,7 @@ export function CheckoutPage() {
                           </Paper>
                         );
                       })}
-                    </Group>
+                    </Box>
 
                     {paymentType === "card" && cardPans.length > 0 ? (
                       <Paper
