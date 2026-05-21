@@ -156,7 +156,8 @@ const resources = {
         emptyDescription: "Menyu yuklandi, lekin hozircha ko'rsatish uchun mahsulot yo'q.",
         productFallbackDescription: "Yangi masalliqlar va tez yetkazib berish.",
         closedTitle: "Kompaniya yopiq",
-        closedDescription: "Ish vaqti boshlanganda qayta ochiladi."
+        closedDescription: "Ish vaqti boshlanganda qayta ochiladi.",
+        closedHoursDescription: "Buyurtmalar {{start}} dan qabul qilinadi"
       },
       product: {
         title: "Mahsulot",
@@ -166,6 +167,7 @@ const resources = {
         inCart: "Savatda: {{count}} dona",
         closed: "Kompaniya yopiq",
         closedDescription: "Buyurtmalar faqat ish vaqtida qabul qilinadi",
+        closedHoursDescription: "Buyurtmalar {{start}} dan qabul qilinadi",
         addToCart: "Savatga qo'shish",
         notFoundTitle: "Mahsulot topilmadi.",
         notFoundDescription: "Tanlangan mahsulot mavjud emas yoki hozircha ochiq emas."
@@ -329,7 +331,8 @@ const resources = {
         emptyDescription: "Меню загружено, но сейчас нет товаров для отображения.",
         productFallbackDescription: "Свежие ингредиенты и быстрая доставка.",
         closedTitle: "Компания закрыта",
-        closedDescription: "Компания возобновит работу в рабочее время."
+        closedDescription: "Компания возобновит работу в рабочее время.",
+        closedHoursDescription: "Заказы принимаются с {{start}}"
       },
       product: {
         title: "Товар",
@@ -339,6 +342,7 @@ const resources = {
         inCart: "Уже в корзине: {{count}}",
         closed: "Компания закрыта",
         closedDescription: "Заказы принимаются только в рабочее время",
+        closedHoursDescription: "Заказы принимаются с {{start}}",
         addToCart: "В корзину",
         notFoundTitle: "Товар не найден.",
         notFoundDescription: "Выбранный товар не существует или сейчас недоступен."

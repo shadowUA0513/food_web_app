@@ -24,6 +24,7 @@ import type { MenuCategoryWithProducts, Product } from "../../../../types/menu";
 import type { CompanySettings } from "../../../../types/settings";
 import type { Locale } from "../home-screen-types";
 import {
+  getWorkingHoursOpeningTime,
   getCompanyId,
   getDiscountedPrice,
   getProductDiscount,
@@ -91,6 +92,9 @@ export function MenuContent({
   const isCompanyClosed = companySettings
     ? !isCompanyOpen(companySettings)
     : false;
+  const workingHoursRange = getWorkingHoursOpeningTime(
+    companySettings?.today_working_hours,
+  );
 
   const visibleCategoriesWithProducts = useMemo(
     () =>
@@ -339,7 +343,9 @@ export function MenuContent({
               {t("product.closed")}
             </Text>
             <Text size="xs" c={textColor} mt={2}>
-              {t("product.closedDescription")}
+              {workingHoursRange
+                ? t("product.closedHoursDescription", workingHoursRange)
+                : t("product.closedDescription")}
             </Text>
           </Paper>
         ) : null}
