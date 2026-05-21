@@ -1053,9 +1053,22 @@ export function CheckoutPage() {
                       {t("checkout.paymentTitle")}
                     </Title>
 
-                    <Group grow align="stretch">
+                    <Box
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          paymentOptions.length > 1
+                            ? "repeat(2, minmax(0, 1fr))"
+                            : "minmax(0, 1fr)",
+                        gap: 16,
+                      }}
+                    >
                       {paymentOptions.map((option) => {
                         const active = paymentType === option.value;
+                        const shouldSpanFullRow =
+                          paymentOptions.length > 2 &&
+                          paymentOptions.length % 2 === 1 &&
+                          option === paymentOptions[paymentOptions.length - 1];
 
                         return (
                           <Paper
@@ -1070,6 +1083,9 @@ export function CheckoutPage() {
                               flex: 1,
                               minHeight: 108,
                               textAlign: "center",
+                              gridColumn: shouldSpanFullRow
+                                ? "1 / -1"
+                                : undefined,
                               background: active
                                 ? hexToRgba(brandScale[1], isDark ? 0.22 : 0.55)
                                 : mutedBg,
@@ -1154,7 +1170,7 @@ export function CheckoutPage() {
                           </Paper>
                         );
                       })}
-                    </Group>
+                    </Box>
 
                     {paymentType === "card" && cardPans.length > 0 ? (
                       <Paper
