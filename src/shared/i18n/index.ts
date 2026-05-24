@@ -73,8 +73,30 @@ const resources = {
         paymentCardCopy: "Nusxalash",
         paymentCardCopiedTitle: "Karta raqami nusxalandi",
         paymentCardCopiedMessage: "Karta raqami clipboard'ga olindi.",
-        paymentPaymeHint: "Payme orqali tezkor onlayn to'lov.",
-        paymentClickHint: "Click orqali qulay onlayn to'lov.",
+        paymentPaymeHelpLabel: "Payme orqali to'lov bo'yicha yo'riqnoma",
+        paymentPaymeHelpTitle: "Payme orqali to'lov",
+        paymentPaymeHint:
+          "Payme ilovangizga ulangan telefon raqamini kiriting.",
+        paymentPaymeInstruction1:
+          "1. Payme ilovangizgxa ulangan telefon raqamini kiriting",
+        paymentPaymeInstruction2:
+          "2. To'lov so'rovi Payme ilovasiga yuboriladi",
+        paymentPaymeInstruction3:
+          "3. Payme ilovasini ochib, \"Invoices\" bo'limiga o'ting",
+        paymentPaymeInstruction4:
+          "4. To'lov so'rovini toping va to'lovni yakunlang",
+        paymentClickHelpLabel: "Click orqali to'lov bo'yicha yo'riqnoma",
+        paymentClickHelpTitle: "Click orqali to'lov",
+        paymentClickHint:
+          "Click ilovangizga ulangan telefon raqamini kiriting.",
+        paymentClickInstruction1:
+          "1. Click ilovangizga ulangan telefon raqamini kiriting",
+        paymentClickInstruction2:
+          "2. To'lov so'rovi Click ilovasiga yuboriladi",
+        paymentClickInstruction3:
+          "3. Click ilovasini ochib, \"Invoices\" bo'limiga o'ting",
+        paymentClickInstruction4:
+          "4. To'lov so'rovini toping va to'lovni yakunlang",
         paymentProofModalTitle: "To'lov faylini yuklang",
         paymentProofModalDescription: "Buyurtmani yuborishdan oldin to'lov tasdig'i rasmi yoki faylini biriktiring.",
         paymentProofPreviewAlt: "To'lov tasdig'i rasmi",
@@ -248,8 +270,30 @@ const resources = {
         paymentCardCopy: "Копировать",
         paymentCardCopiedTitle: "Номер карты скопирован",
         paymentCardCopiedMessage: "Номер карты сохранен в буфер обмена.",
-        paymentPaymeHint: "Быстрая онлайн-оплата через Payme.",
-        paymentClickHint: "Удобная онлайн-оплата через Click.",
+        paymentPaymeHelpLabel: "Инструкция по оплате через Payme",
+        paymentPaymeHelpTitle: "Оплата через Payme",
+        paymentPaymeHint:
+          "Введите номер телефона, привязанный к вашему приложению Payme.",
+        paymentPaymeInstruction1:
+          "1. Введите номер телефона, привязанный к приложению Payme",
+        paymentPaymeInstruction2:
+          "2. Запрос на оплату будет отправлен в приложение Payme",
+        paymentPaymeInstruction3:
+          "3. Откройте Payme и перейдите в раздел \"Invoices\"",
+        paymentPaymeInstruction4:
+          "4. Найдите запрос на оплату и завершите оплату",
+        paymentClickHelpLabel: "Инструкция по оплате через Click",
+        paymentClickHelpTitle: "Оплата через Click",
+        paymentClickHint:
+          "Введите номер телефона, привязанный к вашему приложению Click.",
+        paymentClickInstruction1:
+          "1. Введите номер телефона, привязанный к приложению Click",
+        paymentClickInstruction2:
+          "2. Запрос на оплату будет отправлен в приложение Click",
+        paymentClickInstruction3:
+          "3. Откройте Click и перейдите в раздел \"Invoices\"",
+        paymentClickInstruction4:
+          "4. Найдите запрос на оплату и завершите оплату",
         paymentProofModalTitle: "Загрузите файл оплаты",
         paymentProofModalDescription: "Перед отправкой заказа прикрепите изображение или файл с подтверждением оплаты.",
         paymentProofPreviewAlt: "Изображение подтверждения оплаты",

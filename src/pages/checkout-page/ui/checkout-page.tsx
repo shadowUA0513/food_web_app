@@ -1279,6 +1279,97 @@ export function CheckoutPage() {
                         </Stack>
                       </Paper>
                     ) : null}
+
+                    {(paymentType === "payme" || paymentType === "click") ? (
+                      <Paper
+                        radius={18}
+                        p="md"
+                        style={{
+                          background: mutedBg,
+                          border: cardBorder,
+                        }}
+                      >
+                        <Stack gap="sm">
+                          <Group gap={6} align="center" wrap="nowrap">
+                            <Text fw={700} c={titleColor}>
+                              {t(
+                                paymentType === "payme"
+                                  ? "checkout.paymentPaymeHelpTitle"
+                                  : "checkout.paymentClickHelpTitle",
+                              )}
+                            </Text>
+                            <Popover
+                              width={320}
+                              position="bottom-start"
+                              withArrow
+                              shadow="md"
+                            >
+                              <Popover.Target>
+                                <ActionIcon
+                                  variant="subtle"
+                                  color="gray"
+                                  radius="xl"
+                                  size={24}
+                                  aria-label={t(
+                                    paymentType === "payme"
+                                      ? "checkout.paymentPaymeHelpLabel"
+                                      : "checkout.paymentClickHelpLabel",
+                                  )}
+                                >
+                                  <IconHelpCircle size={16} />
+                                </ActionIcon>
+                              </Popover.Target>
+                              <Popover.Dropdown>
+                                <Stack gap={6}>
+                                  <Text size="sm" fw={700} c={titleColor}>
+                                    {t(
+                                      paymentType === "payme"
+                                        ? "checkout.paymentPaymeHelpTitle"
+                                        : "checkout.paymentClickHelpTitle",
+                                    )}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t(
+                                      paymentType === "payme"
+                                        ? "checkout.paymentPaymeInstruction1"
+                                        : "checkout.paymentClickInstruction1",
+                                    )}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t(
+                                      paymentType === "payme"
+                                        ? "checkout.paymentPaymeInstruction2"
+                                        : "checkout.paymentClickInstruction2",
+                                    )}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t(
+                                      paymentType === "payme"
+                                        ? "checkout.paymentPaymeInstruction3"
+                                        : "checkout.paymentClickInstruction3",
+                                    )}
+                                  </Text>
+                                  <Text size="sm" c={textColor}>
+                                    {t(
+                                      paymentType === "payme"
+                                        ? "checkout.paymentPaymeInstruction4"
+                                        : "checkout.paymentClickInstruction4",
+                                    )}
+                                  </Text>
+                                </Stack>
+                              </Popover.Dropdown>
+                            </Popover>
+                          </Group>
+                          <Text size="sm" c={textColor}>
+                            {t(
+                              paymentType === "payme"
+                                ? "checkout.paymentPaymeHint"
+                                : "checkout.paymentClickHint",
+                            )}
+                          </Text>
+                        </Stack>
+                      </Paper>
+                    ) : null}
                   </Stack>
                 </Paper>
 
