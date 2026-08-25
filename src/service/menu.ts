@@ -12,10 +12,13 @@ function getErrorMessage(error: unknown, fallback: string) {
   return axiosError.response?.data?.message ?? fallback;
 }
 
-export async function getCompanyMenu(companyId: string) {
+export async function getCompanyMenu(companyId: string, query?: string) {
   try {
     const { data } = await api.get<CompanyMenuResponse>(
       `/api/v1/twa/company/${companyId}/menu`,
+      {
+        params: query?.trim() ? { query: query.trim() } : undefined,
+      },
     );
 
     return data.data?.categories ?? [];
@@ -24,10 +27,10 @@ export async function getCompanyMenu(companyId: string) {
   }
 }
 
-export function useCompanyMenu(companyId?: string) {
+export function useCompanyMenu(companyId?: string, query?: string) {
   return useQuery({
-    queryKey: ["company-menu", companyId],
-    queryFn: () => getCompanyMenu(companyId!),
+    queryKey: ["company-menu", companyId, query?.trim() ?? ""],
+    queryFn: () => getCompanyMenu(companyId!, query),
     enabled: Boolean(companyId),
     staleTime: Infinity,
     gcTime: 1000 * 60 * 30,

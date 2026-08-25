@@ -10,12 +10,14 @@ import {
   SegmentedControl,
   SimpleGrid,
   Stack,
+  TextInput,
   Text,
   Title,
 } from "@mantine/core";
-import { IconShoppingBagPlus } from "@tabler/icons-react";
+import { IconSearch, IconShoppingBagPlus, IconX } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useBrandTheme } from "../../../../app/providers/brand-theme-context";
 import { hexToRgba } from "../../../../app/theme/theme";
 import { TELEGRAM_MOBILE_WIDTH } from "../../../../shared/config/telegram";
@@ -84,9 +86,14 @@ export function MenuContent({
 }: MenuContentProps) {
   const { t } = useTranslation();
   const { brandColor } = useBrandTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const headerHeight = 126;
   const headerOffset = 10;
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchDebounceRef = useRef<number | null>(null);
+  const searchUnmountTimeoutRef = useRef<number | null>(null);
   const companyId = getCompanyId();
   const { data: companySettings } = useCompanySettings(companyId);
   const isCompanyClosed = companySettings
@@ -95,6 +102,16 @@ export function MenuContent({
   const workingHoursRange = getWorkingHoursOpeningTime(
     companySettings?.today_working_hours,
   );
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
+  const searchQuery = searchParams.get("query") ?? "";
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const [isSearchOpen, setIsSearchOpen] = useState(Boolean(searchQuery));
+  const [isSearchMounted, setIsSearchMounted] = useState(Boolean(searchQuery));
+  const [isSearchExpanded, setIsSearchExpanded] = useState(Boolean(searchQuery));
+  const [searchInputValue, setSearchInputValue] = useState(searchQuery);
 
   const visibleCategoriesWithProducts = useMemo(
     () =>
@@ -103,11 +120,27 @@ export function MenuContent({
           category,
           products: products.filter((product) => {
             const maybeActive = product as Product & { is_active?: boolean };
-            return product.is_available && maybeActive.is_active !== false;
+            const name = getLocalizedValue(
+              product.name_uz,
+              product.name_ru,
+            ).toLowerCase();
+            const description = (
+              product.description_uz ?? product.description ?? ""
+            ).toLowerCase();
+            const matchesQuery =
+              !normalizedQuery ||
+              name.includes(normalizedQuery) ||
+              description.includes(normalizedQuery);
+
+            return (
+              product.is_available &&
+              maybeActive.is_active !== false &&
+              matchesQuery
+            );
           }),
         }))
         .filter(({ products }) => products.length > 0),
-    [visibleCategories],
+    [getLocalizedValue, normalizedQuery, visibleCategories],
   );
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
     visibleCategoriesWithProducts[0]?.category.id ?? null,
@@ -127,6 +160,92 @@ export function MenuContent({
       return visibleCategoriesWithProducts[0]?.category.id ?? null;
     });
   }, [visibleCategoriesWithProducts]);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      if (searchUnmountTimeoutRef.current !== null) {
+        window.clearTimeout(searchUnmountTimeoutRef.current);
+        searchUnmountTimeoutRef.current = null;
+      }
+
+      setIsSearchMounted(true);
+      const frameId = window.requestAnimationFrame(() => {
+        setIsSearchExpanded(true);
+      });
+
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    setIsSearchExpanded(false);
+
+    if (searchUnmountTimeoutRef.current !== null) {
+      window.clearTimeout(searchUnmountTimeoutRef.current);
+    }
+
+    searchUnmountTimeoutRef.current = window.setTimeout(() => {
+      setIsSearchMounted(false);
+      searchUnmountTimeoutRef.current = null;
+    }, 320);
+  }, [isSearchOpen]);
+
+  useEffect(() => {
+    setSearchInputValue(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!isSearchOpen) {
+      return;
+    }
+
+    if (searchDebounceRef.current !== null) {
+      window.clearTimeout(searchDebounceRef.current);
+    }
+
+    searchDebounceRef.current = window.setTimeout(() => {
+      updateSearchQuery(searchInputValue);
+    }, 350);
+
+    return () => {
+      if (searchDebounceRef.current !== null) {
+        window.clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, [isSearchOpen, searchInputValue]);
+
+  function updateSearchQuery(nextQuery: string) {
+    const nextParams = new URLSearchParams(location.search);
+
+    if (nextQuery.trim()) {
+      nextParams.set("query", nextQuery);
+    } else {
+      nextParams.delete("query");
+    }
+
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextParams.toString() ? `?${nextParams.toString()}` : "",
+      },
+      { replace: true },
+    );
+  }
+
+  function openSearch() {
+    setIsSearchMounted(true);
+    setIsSearchOpen(true);
+  }
+
+  function closeSearch() {
+    setIsSearchOpen(false);
+    setSearchInputValue("");
+    updateSearchQuery("");
+  }
 
   function scrollToCategory(categoryId: string) {
     setActiveCategoryId(categoryId);
@@ -279,52 +398,161 @@ export function MenuContent({
 
         <Box h={headerHeight} />
 
-        {!isLoading && !isError && visibleCategoriesWithProducts.length > 0 ? (
-          <Box
-            style={{
-              overflowX: "auto",
-              paddingBottom: 2,
-              scrollbarWidth: "none",
-            }}
-          >
-            <Group gap="xs" wrap="nowrap">
-              {visibleCategoriesWithProducts.map(({ category }) => {
-                const isActive = activeCategoryId === category.id;
+        {!isError &&
+        (isSearchOpen || visibleCategoriesWithProducts.length > 0 || isLoading) ? (
+          <Stack gap={8}>
+            <Group gap="xs" wrap="nowrap" align="center">
+              <ActionIcon
+                size={36}
+                radius="xl"
+                variant="filled"
+                color={brandColor}
+                aria-label={
+                  isSearchOpen
+                    ? t("menu.closeSearch")
+                    : t("menu.openSearch")
+                }
+                onClick={() => {
+                  if (isSearchOpen) {
+                    closeSearch();
+                    return;
+                  }
 
-                return (
-                  <Paper
-                    key={category.id}
-                    component="button"
-                    type="button"
-                    px="sm"
-                    py={8}
-                    radius="xl"
-                    onClick={() => scrollToCategory(category.id)}
-                    style={{
-                      cursor: "pointer",
-                      border: isActive
-                        ? `1px solid ${brandColor}`
-                        : isDark
-                          ? "1px solid rgba(255,255,255,0.06)"
-                          : "1px solid rgba(15,23,42,0.08)",
-                      background: isActive
-                        ? isDark
-                          ? hexToRgba(brandColor, 0.16)
-                          : hexToRgba(brandColor, 0.08)
-                        : surfaceBg,
-                      color: isActive ? brandColor : titleColor,
-                      fontWeight: 700,
-                      fontSize: "0.82rem",
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
+                  openSearch();
+                }}
+                style={{
+                  flexShrink: 0,
+                  boxShadow: isDark
+                    ? `0 8px 16px ${hexToRgba(brandColor, 0.18)}`
+                    : `0 8px 16px ${hexToRgba(brandColor, 0.14)}`,
+                }}
+              >
+                {isSearchOpen ? <IconX size={18} /> : <IconSearch size={18} />}
+              </ActionIcon>
+
+              {isSearchMounted ? (
+                <Paper
+                  radius={999}
+                  px={8}
+                  py={4}
+                  style={{
+                    flex: 1,
+                    maxWidth: isSearchExpanded ? "80%" : 0,
+                    opacity: isSearchExpanded ? 1 : 0,
+                    transform: isSearchExpanded
+                      ? "translateX(0) scale(1)"
+                      : "translateX(-12px) scale(0.96)",
+                    transformOrigin: "left center",
+                    transition:
+                      "max-width 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1), flex-basis 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    overflow: "hidden",
+                    background: isDark
+                      ? "rgba(255,255,255,0.04)"
+                      : "rgba(255,255,255,0.9)",
+                    border: isDark
+                      ? "1px solid rgba(255,255,255,0.08)"
+                      : "1px solid rgba(15,23,42,0.08)",
+                    boxShadow: isDark
+                      ? "0 10px 20px rgba(0,0,0,0.16)"
+                      : "0 8px 18px rgba(15,23,42,0.06)",
+                    backdropFilter: "blur(12px)",
+                  }}
+                >
+                  <TextInput
+                    ref={searchInputRef}
+                    value={searchInputValue}
+                    onChange={(event) => {
+                      const nextValue = event.currentTarget.value;
+                      setSearchInputValue(nextValue);
                     }}
-                  >
-                    {getLocalizedValue(category.name_uz, category.name_ru)}
-                  </Paper>
-                );
-              })}
+                    placeholder={t("menu.searchPlaceholder")}
+                    leftSection={<IconSearch size={16} />}
+                    rightSection={
+                      searchInputValue ? (
+                        <ActionIcon
+                          variant="subtle"
+                          color="gray"
+                          size="sm"
+                          radius="xl"
+                          aria-label={t("menu.clearSearch")}
+                          onClick={() => {
+                            setSearchInputValue("");
+                            updateSearchQuery("");
+                          }}
+                        >
+                          <IconX size={14} />
+                        </ActionIcon>
+                      ) : null
+                    }
+                    styles={{
+                      root: {
+                        width: "100%",
+                      },
+                      input: {
+                        width: "100%",
+                        height: 32,
+                        borderRadius: 999,
+                        background: "transparent",
+                        border: "none",
+                        color: titleColor,
+                        paddingInlineStart: 36,
+                        paddingInlineEnd: 36,
+                      },
+                      section: {
+                        color: textColor,
+                      },
+                    }}
+                  />
+                </Paper>
+              ) : (
+                <Box
+                  style={{
+                    overflowX: "auto",
+                    scrollbarWidth: "none",
+                    flex: 1,
+                  }}
+                >
+                  <Group gap="xs" wrap="nowrap">
+                    {visibleCategoriesWithProducts.map(({ category }) => {
+                      const isActive = activeCategoryId === category.id;
+
+                      return (
+                        <Paper
+                          key={category.id}
+                          component="button"
+                          type="button"
+                          px="sm"
+                          py={8}
+                          radius="xl"
+                          onClick={() => scrollToCategory(category.id)}
+                          style={{
+                            cursor: "pointer",
+                            border: isActive
+                              ? `1px solid ${brandColor}`
+                              : isDark
+                                ? "1px solid rgba(255,255,255,0.06)"
+                                : "1px solid rgba(15,23,42,0.08)",
+                            background: isActive
+                              ? isDark
+                                ? hexToRgba(brandColor, 0.16)
+                                : hexToRgba(brandColor, 0.08)
+                              : surfaceBg,
+                            color: isActive ? brandColor : titleColor,
+                            fontWeight: 700,
+                            fontSize: "0.82rem",
+                            whiteSpace: "nowrap",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {getLocalizedValue(category.name_uz, category.name_ru)}
+                        </Paper>
+                      );
+                    })}
+                  </Group>
+                </Box>
+              )}
             </Group>
-          </Box>
+          </Stack>
         ) : null}
 
         {isCompanyClosed ? (
@@ -540,9 +768,7 @@ export function MenuContent({
           </Stack>
         ))}
 
-        {!isLoading &&
-        !isError &&
-        visibleCategoriesWithProducts.length === 0 ? (
+        {!isLoading && !isError && visibleCategoriesWithProducts.length === 0 ? (
           <Paper
             radius={24}
             p="lg"
@@ -557,10 +783,12 @@ export function MenuContent({
             }}
           >
             <Text fw={800} c={titleColor}>
-              {t("menu.emptyTitle")}
+              {searchQuery.trim() ? t("menu.searchEmptyTitle") : t("menu.emptyTitle")}
             </Text>
             <Text size="sm" c={textColor} mt={4}>
-              {t("menu.emptyDescription")}
+              {searchQuery.trim()
+                ? t("menu.searchEmptyDescription")
+                : t("menu.emptyDescription")}
             </Text>
           </Paper>
         ) : null}
