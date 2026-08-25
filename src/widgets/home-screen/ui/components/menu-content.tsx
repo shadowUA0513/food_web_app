@@ -692,7 +692,15 @@ export function MenuContent({
                         </Box>
 
                         <Stack gap={4} style={{ flex: 1 }}>
-                          <Text fw={700} fz="sm" lineClamp={1} c={titleColor}>
+                          <Text
+                            fw={700}
+                            fz="sm"
+                            c={titleColor}
+                            style={{
+                              whiteSpace: "normal",
+                              overflowWrap: "anywhere",
+                            }}
+                          >
                             {getLocalizedValue(
                               product.name_uz,
                               product.name_ru,
