@@ -30,6 +30,11 @@ export function HomeScreen() {
   const computedColorScheme = useComputedColorScheme("light");
   const navigate = useNavigate();
   const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
+  const query = searchParams.get("query") ?? "";
 
   const companyId = getCompanyId();
   const telegramId = getTelegramId();
@@ -43,7 +48,7 @@ export function HomeScreen() {
     isLoading,
     isError,
     error,
-  } = useCompanyMenu(companyId);
+  } = useCompanyMenu(companyId, query);
 
   const visibleCategories = useMemo(
     () => categories.filter(({ products }) => products.length > 0),
