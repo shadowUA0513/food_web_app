@@ -56,7 +56,7 @@ interface MenuContentProps {
   onOpenOrderHistory?: () => void;
   onOpenProduct: (product: Product) => void;
   onAddToCart: (product: Product) => void;
-  getLocalizedValue: (nameUz: string, nameRu: string) => string;
+  getLocalizedValue: (nameUz: string, nameRu: string, nameEn?: string) => string;
   formatPrice: (price: number) => string;
 }
 
@@ -323,6 +323,7 @@ export function MenuContent({
                   data={[
                     { label: "UZ", value: "uz" },
                     { label: "RU", value: "ru" },
+                    { label: "EN", value: "en" },
                   ]}
                   styles={{
                     root: {

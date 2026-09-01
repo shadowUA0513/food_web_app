@@ -27,7 +27,7 @@ interface CartDrawerProps {
   incrementItem: (productId: string) => void;
   decrementItem: (productId: string) => void;
   clearCart: () => void;
-  getLocalizedValue: (nameUz: string, nameRu: string) => string;
+  getLocalizedValue: (nameUz: string, nameRu: string, nameEn?: string) => string;
   formatPrice: (price: number) => string;
   onCheckout: () => void;
 }

@@ -72,7 +72,11 @@ export function HomeScreen() {
     [cartList],
   );
 
-  const locale: Locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
+  const locale: Locale = i18n.resolvedLanguage === "uz"
+    ? "uz"
+    : i18n.resolvedLanguage === "en"
+      ? "en"
+      : "ru";
   const isCartOpened = location.pathname === "/cart";
   const isDark = computedColorScheme === "dark";
   const pageBg = isDark ? "#111318" : "#f3f4f6";
@@ -81,8 +85,12 @@ export function HomeScreen() {
   const textColor = isDark ? "#b4bcc8" : "#5f6670";
   const mutedBg = isDark ? "#20242c" : "#f8f9fb";
 
-  function getLocalizedValue(nameUz: string, nameRu: string) {
-    return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
+  function getLocalizedValue(nameUz: string, nameRu: string, nameEn?: string) {
+    return locale === "uz"
+      ? nameUz || nameRu || nameEn || ""
+      : locale === "en"
+        ? nameEn || nameRu || nameUz || ""
+        : nameRu || nameUz || nameEn || "";
   }
 
   function openProductPage(product: Product) {

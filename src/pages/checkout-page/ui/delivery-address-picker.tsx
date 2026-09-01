@@ -90,7 +90,11 @@ export function DeliveryAddressPicker({
   const [mapError, setMapError] = useState<string | null>(null);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
-  const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
+  const locale = i18n.resolvedLanguage === "uz"
+    ? "uz"
+    : i18n.resolvedLanguage === "en"
+      ? "en"
+      : "ru";
 
   function updatePlacemark(latitude: number, longitude: number, label: string) {
     const map = mapInstanceRef.current;

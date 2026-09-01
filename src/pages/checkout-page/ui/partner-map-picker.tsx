@@ -67,9 +67,13 @@ function getBounds(points: [number, number][]) {
   ];
 }
 
-function getPartnerLabel(partner: Partner, locale: "uz" | "ru") {
+function getPartnerLabel(partner: Partner, locale: "uz" | "ru" | "en") {
   return (
-    (locale === "uz" ? partner.name_uz : partner.name_ru) ??
+    (locale === "uz"
+      ? partner.name_uz
+      : locale === "en"
+        ? partner.name_en
+        : partner.name_ru) ??
     partner.name ??
     partner.full_name ??
     partner.title ??
@@ -137,7 +141,11 @@ export function PartnerMapPicker({
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<YandexMapInstance | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
-  const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
+  const locale = i18n.resolvedLanguage === "uz"
+    ? "uz"
+    : i18n.resolvedLanguage === "en"
+      ? "en"
+      : "ru";
 
   const partnersWithCoordinates = useMemo<PartnerWithCoordinates[]>(
     () =>

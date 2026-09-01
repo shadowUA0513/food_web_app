@@ -128,7 +128,11 @@ export function CheckoutPage() {
     error: partnersError,
   } = useCompanyPartners(companyId);
 
-  const locale: Locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
+  const locale: Locale = i18n.resolvedLanguage === "uz"
+    ? "uz"
+    : i18n.resolvedLanguage === "en"
+      ? "en"
+      : "ru";
   const cartList = useMemo(() => Object.values(cartItems), [cartItems]);
   const cartTotalPrice = useMemo(
     () =>
@@ -290,8 +294,12 @@ export function CheckoutPage() {
     }
   }, [paymentOptions, paymentType]);
 
-  function getLocalizedValue(nameUz: string, nameRu: string) {
-    return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
+  function getLocalizedValue(nameUz: string, nameRu: string, nameEn?: string) {
+    return locale === "uz"
+      ? nameUz || nameRu || nameEn || ""
+      : locale === "en"
+        ? nameEn || nameRu || nameUz || ""
+        : nameRu || nameUz || nameEn || "";
   }
 
   function formatDeliveryEstimatedTime(minutes?: number | null) {

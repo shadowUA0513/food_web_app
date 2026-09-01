@@ -4,8 +4,10 @@ export interface Product {
   category_id: string
   name_uz: string
   name_ru: string
+  name_en?: string
   description: string
   description_uz?: string
+  description_en?: string
   price: number
   discounted_price?: number | null
   image_url: string
@@ -20,6 +22,7 @@ export interface MenuCategory {
   company_id: string
   name_uz: string
   name_ru: string
+  name_en?: string
   sort_order: number
   created_at: string
   updated_at: string

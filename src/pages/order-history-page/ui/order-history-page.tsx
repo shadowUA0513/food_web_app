@@ -108,13 +108,16 @@ export function OrderHistoryPage() {
       name?: string;
       name_uz?: string;
       name_ru?: string;
+      name_en?: string;
     },
     itemIndex: number,
   ) {
     const localizedName =
       i18n.language === "uz"
         ? item.name_uz ?? item.name_ru ?? item.name
-        : item.name_ru ?? item.name_uz ?? item.name;
+        : i18n.language === "en"
+          ? item.name_en ?? item.name_ru ?? item.name_uz ?? item.name
+          : item.name_ru ?? item.name_uz ?? item.name;
 
     return localizedName || `${t("history.item")} ${itemIndex + 1}`;
   }
