@@ -132,8 +132,8 @@ const resources = {
         total: "Jami",
         confirmOrder: "Buyurtmani tasdiqlash",
         submitPending: "Yuborilmoqda...",
-        submitSuccessTitle: "Buyurtma yaratildi",
-        submitSuccessMessage: "Buyurtmangiz qabul qilindi.",
+        submitSuccessTitle: "Buyurtma qabul qilindi",
+        submitSuccessMessage: "Ajoyib! Restoran buyurtmangizni tasdiqladi.",
         submitErrorTitle: "Buyurtmani yuborib bo'lmadi",
         validationName: "Ismingizni kiriting",
         validationPhone: "Telefon raqamini kiriting",
@@ -144,7 +144,12 @@ const resources = {
         missingUser: "Telegram foydalanuvchisi topilmadi",
         emptyTitle: "Buyurtma uchun mahsulot yo'q",
         emptyDescription: "Checkout sahifasiga o'tishdan oldin savatga mahsulot qo'shing.",
-        backToMenu: "Menyuga qaytish"
+        backToMenu: "Menyuga qaytish",
+        successPreparing: "Buyurtma tayyorlanmoqda",
+        successDelivery: "Taxminiy yetkazib berish",
+        successUtc: "Vaqt UTC bo'yicha ko'rsatilgan",
+        successClosing: "{{count}} soniyada yopiladi",
+        successViewOrder: "Buyurtmani ko'rish"
       },
       menu: {
         titleFallback: "Taomlar menyusi",
@@ -313,8 +318,8 @@ const resources = {
         total: "Total",
         confirmOrder: "Confirm order",
         submitPending: "Submitting...",
-        submitSuccessTitle: "Order created",
-        submitSuccessMessage: "Your order has been accepted.",
+        submitSuccessTitle: "Order accepted",
+        submitSuccessMessage: "Great! The restaurant has confirmed your order.",
         submitErrorTitle: "Could not submit the order",
         validationName: "Enter your name",
         validationPhone: "Enter your phone number",
@@ -325,7 +330,12 @@ const resources = {
         missingUser: "Telegram user not found",
         emptyTitle: "No products in the order",
         emptyDescription: "Add products to your cart before checking out.",
-        backToMenu: "Back to menu"
+        backToMenu: "Back to menu",
+        successPreparing: "Preparing your order",
+        successDelivery: "Estimated delivery",
+        successUtc: "Times shown in UTC",
+        successClosing: "Closing in {{count}} seconds",
+        successViewOrder: "View order"
       },
       menu: {
         titleFallback: "Food menu",
@@ -493,8 +503,8 @@ const resources = {
         total: "Итого",
         confirmOrder: "Подтвердить заказ",
         submitPending: "Отправка...",
-        submitSuccessTitle: "Заказ создан",
-        submitSuccessMessage: "Ваш заказ успешно отправлен.",
+        submitSuccessTitle: "Заказ принят",
+        submitSuccessMessage: "Отлично! Ресторан подтвердил ваш заказ.",
         submitErrorTitle: "Не удалось отправить заказ",
         validationName: "Введите имя",
         validationPhone: "Введите номер телефона",
@@ -505,7 +515,12 @@ const resources = {
         missingUser: "Пользователь Telegram не найден",
         emptyTitle: "Заказ пока пуст",
         emptyDescription: "Добавьте товары в корзину, прежде чем переходить к оформлению.",
-        backToMenu: "Вернуться в меню"
+        backToMenu: "Вернуться в меню",
+        successPreparing: "Заказ готовится",
+        successDelivery: "Примерная доставка",
+        successUtc: "Время указано в UTC",
+        successClosing: "Закроется через {{count}} сек.",
+        successViewOrder: "Посмотреть заказ"
       },
       menu: {
         titleFallback: "Меню",

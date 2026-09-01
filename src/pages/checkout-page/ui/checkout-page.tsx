@@ -21,22 +21,25 @@ import {
   useComputedColorScheme,
   useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import {
   IconArrowLeft,
   IconCheck,
   IconCash,
+  IconChefHat,
+  IconClock,
   IconCopy,
   IconCreditCard,
   IconFileDescription,
   IconHelpCircle,
   IconPhoto,
   IconInfoCircle,
+  IconMotorbike,
   IconTrash,
   IconX,
   IconUserCircle,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBrandTheme } from "../../../app/providers/brand-theme-context";
@@ -79,6 +82,270 @@ const DEFAULT_SUPPORTED_ORDER_TYPES: OrderType[] = [
   "delivery-anywhere",
 ];
 
+interface OrderSuccessPanelProps {
+  opened: boolean;
+  startedAt: number;
+  deliveryEstimatedTime?: number;
+  isDark: boolean;
+  onClose: () => void;
+  onViewOrder: () => void;
+}
+
+function formatUtcTime(timestamp: number) {
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+  }).format(new Date(timestamp));
+}
+
+function OrderSuccessContent({
+  startedAt,
+  deliveryEstimatedTime,
+  isDark,
+  secondsLeft,
+  onViewOrder,
+}: Omit<OrderSuccessPanelProps, "opened" | "onClose"> & {
+  secondsLeft: number;
+}) {
+  const { t } = useTranslation();
+  const preparingEnd = startedAt + 5 * 60 * 1000;
+  const deliveryStart = startedAt + 15 * 60 * 1000;
+  const deliveryEnd =
+    deliveryStart + Math.max(deliveryEstimatedTime ?? 35, 20) * 60 * 1000;
+  const titleColor = isDark ? "#f5f7fa" : "#17202b";
+  const textColor = isDark ? "#c7d0da" : "#5f6670";
+  const cardBg = isDark ? "rgba(18, 29, 42, 0.5)" : "#ffffff";
+  const cardBorder = isDark ? "#344557" : "#dfe4e8";
+  const green = isDark ? "#52e798" : "#2b9d62";
+
+  return (
+    <Stack gap="md" align="stretch" px={4} pb={4}>
+      <Box ta="center">
+        <Box
+          mx="auto"
+          mb={14}
+          w={64}
+          h={64}
+          style={{
+            display: "grid",
+            placeItems: "center",
+            borderRadius: "50%",
+            background: isDark ? "#277b56" : "#dff5e5",
+            color: green,
+          }}
+        >
+          <IconCheck size={34} stroke={2.6} />
+        </Box>
+        <Title order={2} c={titleColor} fz="1.35rem" lh={1.15}>
+          {t("checkout.submitSuccessTitle")}
+        </Title>
+        <Text c={textColor} size="sm" mt={8} lh={1.35}>
+          {t("checkout.submitSuccessMessage")}
+        </Text>
+      </Box>
+
+      <Stack gap={8}>
+        <SuccessTimeCard
+          icon={<IconChefHat size={27} stroke={1.9} />}
+          label={t("checkout.successPreparing")}
+          time={`${formatUtcTime(startedAt)} - ${formatUtcTime(preparingEnd)}`}
+          cardBg={cardBg}
+          cardBorder={cardBorder}
+          green={green}
+          textColor={textColor}
+        />
+        <SuccessTimeCard
+          icon={<IconMotorbike size={29} stroke={1.9} />}
+          label={t("checkout.successDelivery")}
+          time={`${formatUtcTime(deliveryStart)} - ${formatUtcTime(deliveryEnd)}`}
+          cardBg={cardBg}
+          cardBorder={cardBorder}
+          green={green}
+          textColor={textColor}
+        />
+      </Stack>
+
+      <Group justify="center" gap={7} mt={2}>
+        <IconClock size={16} stroke={1.8} color={textColor} />
+        <Text c={textColor} size="xs">
+          {t("checkout.successUtc")}
+        </Text>
+      </Group>
+
+      <Group justify="center" gap={10} mt={4}>
+        <Box
+          w={42}
+          h={42}
+          style={{
+            display: "grid",
+            placeItems: "center",
+            borderRadius: "50%",
+            border: `3px solid ${green}`,
+            color: titleColor,
+            fontWeight: 800,
+            fontSize: "0.9rem",
+          }}
+        >
+          {secondsLeft}
+        </Box>
+        <Text c={titleColor} size="sm" fw={600}>
+          {t("checkout.successClosing", { count: secondsLeft })}
+        </Text>
+      </Group>
+
+      <Button
+        variant="outline"
+        color={green}
+        radius="md"
+        size="sm"
+        mx="auto"
+        onClick={onViewOrder}
+        styles={{
+          root: {
+            color: titleColor,
+            borderColor: cardBorder,
+            minWidth: 126,
+            fontWeight: 700,
+          },
+        }}
+      >
+        {t("checkout.successViewOrder")}
+      </Button>
+    </Stack>
+  );
+}
+
+function SuccessTimeCard({
+  icon,
+  label,
+  time,
+  cardBg,
+  cardBorder,
+  green,
+  textColor,
+}: {
+  icon: ReactNode;
+  label: string;
+  time: string;
+  cardBg: string;
+  cardBorder: string;
+  green: string;
+  textColor: string;
+}) {
+  return (
+    <Group
+      wrap="nowrap"
+      gap="md"
+      px="sm"
+      py={9}
+      style={{
+        background: cardBg,
+        border: `1px solid ${cardBorder}`,
+        borderRadius: 9,
+      }}
+    >
+      <Box c={green} style={{ display: "grid", placeItems: "center" }}>
+        {icon}
+      </Box>
+      <Stack gap={1}>
+        <Text c={textColor} size="xs" lh={1.2}>
+          {label}
+        </Text>
+        <Text c={green} fw={800} fz="1.05rem" lh={1.2}>
+          {time}
+        </Text>
+      </Stack>
+    </Group>
+  );
+}
+
+function OrderSuccessPanel({
+  opened,
+  startedAt,
+  deliveryEstimatedTime,
+  isDark,
+  onClose,
+  onViewOrder,
+}: OrderSuccessPanelProps) {
+  const isMobile = useMediaQuery("(max-width: 600px)");
+  const [secondsLeft, setSecondsLeft] = useState(5);
+
+  useEffect(() => {
+    if (!opened) {
+      return;
+    }
+
+    setSecondsLeft(5);
+    const intervalId = window.setInterval(() => {
+      setSecondsLeft((current) => Math.max(current - 1, 0));
+    }, 1000);
+    const timeoutId = window.setTimeout(onClose, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [onClose, opened, startedAt]);
+
+  const content = (
+    <OrderSuccessContent
+      startedAt={startedAt}
+      deliveryEstimatedTime={deliveryEstimatedTime}
+      isDark={isDark}
+      secondsLeft={secondsLeft}
+      onViewOrder={onViewOrder}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        opened={opened}
+        onClose={onClose}
+        position="bottom"
+        size="auto"
+        withCloseButton
+        overlayProps={{ backgroundOpacity: 0.72, blur: 3 }}
+        styles={{
+          content: {
+            background: isDark ? "#182636" : "#ffffff",
+            borderTop: `1px solid ${isDark ? "#344557" : "#dfe4e8"}`,
+            borderRadius: "22px 22px 0 0",
+          },
+          header: { background: "transparent" },
+          body: { padding: "0 18px 18px" },
+        }}
+      >
+        {content}
+      </Drawer>
+    );
+  }
+
+  return (
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      centered
+      withCloseButton
+      size={330}
+      overlayProps={{ backgroundOpacity: 0.72, blur: 3 }}
+      styles={{
+        content: {
+          background: isDark ? "#182636" : "#ffffff",
+          border: `1px solid ${isDark ? "#344557" : "#dfe4e8"}`,
+          borderRadius: 18,
+        },
+        header: { background: "transparent" },
+        body: { padding: "0 18px 20px" },
+      }}
+    >
+      {content}
+    </Modal>
+  );
+}
+
 export function CheckoutPage() {
   const [settingsOpened, { open: openSettings, close: closeSettings }] =
     useDisclosure(false);
@@ -109,6 +376,10 @@ export function CheckoutPage() {
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(
     null,
   );
+  const [orderSuccessOpened, setOrderSuccessOpened] = useState(false);
+  const [orderSuccessStartedAt, setOrderSuccessStartedAt] = useState(0);
+  const [successDeliveryEstimatedTime, setSuccessDeliveryEstimatedTime] =
+    useState<number | undefined>();
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
@@ -369,6 +640,22 @@ export function CheckoutPage() {
     });
   }
 
+  function closeOrderSuccess() {
+    setOrderSuccessOpened(false);
+    navigate({
+      pathname: "/",
+      search: location.search,
+    });
+  }
+
+  function viewOrderFromSuccess() {
+    setOrderSuccessOpened(false);
+    navigate({
+      pathname: "/order-history",
+      search: location.search,
+    });
+  }
+
   function validateOrderBeforeSubmit() {
     if (!selectedOrderTypeSupported) {
       showAppNotification({
@@ -474,16 +761,9 @@ export function CheckoutPage() {
 
       clearCart();
       setPaymentProofFile(null);
-      showAppNotification({
-        title: t("checkout.submitSuccessTitle"),
-        message: t("checkout.submitSuccessMessage"),
-        color: "green",
-        icon: <IconCheck size={18} />,
-      });
-      navigate({
-        pathname: "/",
-        search: location.search,
-      });
+      setSuccessDeliveryEstimatedTime(deliveryEstimatedTime);
+      setOrderSuccessStartedAt(Date.now());
+      setOrderSuccessOpened(true);
     } catch (error) {
       showAppNotification({
         title: t("checkout.submitErrorTitle"),
@@ -555,7 +835,16 @@ export function CheckoutPage() {
   }
 
   return (
-    <AppShell bg={pageBg} padding={0}>
+    <>
+      <OrderSuccessPanel
+        opened={orderSuccessOpened}
+        startedAt={orderSuccessStartedAt}
+        deliveryEstimatedTime={successDeliveryEstimatedTime}
+        isDark={isDark}
+        onClose={closeOrderSuccess}
+        onViewOrder={viewOrderFromSuccess}
+      />
+      <AppShell bg={pageBg} padding={0}>
       <SettingsDrawer
         opened={settingsOpened}
         onClose={closeSettings}
@@ -1457,6 +1746,7 @@ export function CheckoutPage() {
           </Stack>
         </Box>
       </AppShell.Main>
-    </AppShell>
+      </AppShell>
+    </>
   );
 }
