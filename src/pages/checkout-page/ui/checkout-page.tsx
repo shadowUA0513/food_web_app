@@ -105,9 +105,13 @@ function OrderSuccessContent({
   deliveryEstimatedTime,
   isDark,
   secondsLeft,
+  isMobile,
+  onClose,
   onViewOrder,
 }: Omit<OrderSuccessPanelProps, "opened" | "onClose"> & {
   secondsLeft: number;
+  isMobile: boolean;
+  onClose: () => void;
 }) {
   const { t } = useTranslation();
   const preparingEnd = startedAt + 5 * 60 * 1000;
@@ -121,22 +125,65 @@ function OrderSuccessContent({
   const green = isDark ? "#52e798" : "#2b9d62";
 
   return (
-    <Stack gap="md" align="stretch" px={4} pb={4}>
+    <Stack
+      gap="md"
+      align="stretch"
+      px={4}
+      pt={isMobile ? 26 : 6}
+      pb={4}
+      style={{ position: "relative" }}
+    >
+      <Box
+        style={{
+          position: "absolute",
+          top: isMobile ? 2 : 4,
+          right: 0,
+          left: 0,
+          display: "flex",
+          justifyContent: "flex-end",
+          pointerEvents: "none",
+        }}
+      >
+        {isMobile ? (
+          <Box
+            w={42}
+            h={4}
+            style={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              borderRadius: 99,
+              background: isDark ? "#7b8793" : "#b8bec4",
+            }}
+          />
+        ) : null}
+        <ActionIcon
+          variant="subtle"
+          color={isDark ? "gray.2" : "dark"}
+          size={34}
+          radius="xl"
+          aria-label={t("common.close")}
+          onClick={onClose}
+          style={{ pointerEvents: "auto" }}
+        >
+          <IconX size={23} stroke={1.8} />
+        </ActionIcon>
+      </Box>
       <Box ta="center">
         <Box
           mx="auto"
-          mb={14}
-          w={64}
-          h={64}
+          mb={15}
+          w={72}
+          h={72}
           style={{
             display: "grid",
             placeItems: "center",
             borderRadius: "50%",
-            background: isDark ? "#277b56" : "#dff5e5",
+            background: isDark ? "#2b8a5d" : "#dff5e5",
             color: green,
           }}
         >
-          <IconCheck size={34} stroke={2.6} />
+          <IconCheck size={38} stroke={2.6} />
         </Box>
         <Title order={2} c={titleColor} fz="1.35rem" lh={1.15}>
           {t("checkout.submitSuccessTitle")}
@@ -150,7 +197,7 @@ function OrderSuccessContent({
         <SuccessTimeCard
           icon={<IconChefHat size={27} stroke={1.9} />}
           label={t("checkout.successPreparing")}
-          time={`${formatUtcTime(startedAt)} - ${formatUtcTime(preparingEnd)}`}
+          time={`${formatUtcTime(startedAt)} – ${formatUtcTime(preparingEnd)}`}
           cardBg={cardBg}
           cardBorder={cardBorder}
           green={green}
@@ -159,7 +206,7 @@ function OrderSuccessContent({
         <SuccessTimeCard
           icon={<IconMotorbike size={29} stroke={1.9} />}
           label={t("checkout.successDelivery")}
-          time={`${formatUtcTime(deliveryStart)} - ${formatUtcTime(deliveryEnd)}`}
+          time={`${formatUtcTime(deliveryStart)} – ${formatUtcTime(deliveryEnd)}`}
           cardBg={cardBg}
           cardBorder={cardBorder}
           green={green}
@@ -239,11 +286,12 @@ function SuccessTimeCard({
       wrap="nowrap"
       gap="md"
       px="sm"
-      py={9}
+      py={12}
       style={{
         background: cardBg,
         border: `1px solid ${cardBorder}`,
-        borderRadius: 9,
+        borderRadius: 8,
+        minHeight: 68,
       }}
     >
       <Box c={green} style={{ display: "grid", placeItems: "center" }}>
@@ -295,6 +343,8 @@ function OrderSuccessPanel({
       deliveryEstimatedTime={deliveryEstimatedTime}
       isDark={isDark}
       secondsLeft={secondsLeft}
+      isMobile={Boolean(isMobile)}
+      onClose={onClose}
       onViewOrder={onViewOrder}
     />
   );
@@ -306,15 +356,15 @@ function OrderSuccessPanel({
         onClose={onClose}
         position="bottom"
         size="auto"
-        withCloseButton
+        withCloseButton={false}
         overlayProps={{ backgroundOpacity: 0.72, blur: 3 }}
         styles={{
           content: {
             background: isDark ? "#182636" : "#ffffff",
-            borderTop: `1px solid ${isDark ? "#344557" : "#dfe4e8"}`,
-            borderRadius: "22px 22px 0 0",
+            border: `2px solid ${isDark ? "#4c5c6b" : "#dfe4e8"}`,
+            borderRadius: "28px 28px 0 0",
           },
-          header: { background: "transparent" },
+          header: { display: "none" },
           body: { padding: "0 18px 18px" },
         }}
       >
@@ -328,7 +378,7 @@ function OrderSuccessPanel({
       opened={opened}
       onClose={onClose}
       centered
-      withCloseButton
+      withCloseButton={false}
       size={330}
       overlayProps={{ backgroundOpacity: 0.72, blur: 3 }}
       styles={{
@@ -337,7 +387,7 @@ function OrderSuccessPanel({
           border: `1px solid ${isDark ? "#344557" : "#dfe4e8"}`,
           borderRadius: 18,
         },
-        header: { background: "transparent" },
+        header: { display: "none" },
         body: { padding: "0 18px 20px" },
       }}
     >

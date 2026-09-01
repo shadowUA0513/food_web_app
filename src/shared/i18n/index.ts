@@ -184,7 +184,8 @@ const resources = {
         notFoundDescription: "Tanlangan mahsulot mavjud emas yoki hozircha ochiq emas."
       },
       common: {
-        unknownError: "Noma'lum xatolik"
+        unknownError: "Noma'lum xatolik",
+        close: "Yopish"
       }
     }
   },
@@ -369,7 +370,8 @@ const resources = {
         notFoundDescription: "The selected product does not exist or is currently unavailable."
       },
       common: {
-        unknownError: "Unknown error"
+        unknownError: "Unknown error",
+        close: "Close"
       }
     }
   },
@@ -555,7 +557,8 @@ const resources = {
         notFoundDescription: "Выбранный товар не существует или сейчас недоступен."
       },
       common: {
-        unknownError: "Неизвестная ошибка"
+        unknownError: "Неизвестная ошибка",
+        close: "Закрыть"
       }
     }
   }
