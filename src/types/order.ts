@@ -34,6 +34,16 @@ export interface CreateOrderPayload {
   items: CreateOrderItemPayload[];
 }
 
+export interface OrderTimeRange {
+  from: string;
+  to: string;
+}
+
+export interface PromisedTimeRanges {
+  promised_delivery_time_range?: OrderTimeRange;
+  promised_ready_time_range?: OrderTimeRange;
+}
+
 export interface Order {
   id: string;
   company_id: string;
@@ -45,6 +55,7 @@ export interface Order {
   status?: string;
   created_at?: string;
   updated_at?: string;
+  promised_time_ranges?: PromisedTimeRanges;
 }
 
 export interface CreateOrderResponse {

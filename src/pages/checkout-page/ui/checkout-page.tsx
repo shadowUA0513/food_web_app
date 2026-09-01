@@ -65,6 +65,7 @@ import {
 import type {
   CheckoutQuoteItemPayload,
   CreateOrderPayload,
+  PromisedTimeRanges,
 } from "../../../types/order";
 import type { PaymentMethod } from "../../../types/settings";
 import type { Locale } from "../../../widgets/home-screen/ui/home-screen-types";
@@ -86,12 +87,13 @@ interface OrderSuccessPanelProps {
   opened: boolean;
   startedAt: number;
   deliveryEstimatedTime?: number;
+  promisedTimeRanges?: PromisedTimeRanges;
   isDark: boolean;
   onClose: () => void;
   onViewOrder: () => void;
 }
 
-function formatUtcTime(timestamp: number) {
+function formatUtcTime(timestamp: string | number) {
   return new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
@@ -103,6 +105,7 @@ function formatUtcTime(timestamp: number) {
 function OrderSuccessContent({
   startedAt,
   deliveryEstimatedTime,
+  promisedTimeRanges,
   isDark,
   secondsLeft,
   isMobile,
@@ -114,10 +117,19 @@ function OrderSuccessContent({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const preparingEnd = startedAt + 5 * 60 * 1000;
-  const deliveryStart = startedAt + 15 * 60 * 1000;
+  const fallbackPreparingEnd = startedAt + 5 * 60 * 1000;
+  const fallbackDeliveryStart = startedAt + 15 * 60 * 1000;
+  const fallbackDeliveryEnd =
+    fallbackDeliveryStart + Math.max(deliveryEstimatedTime ?? 35, 20) * 60 * 1000;
+  const preparingStart =
+    promisedTimeRanges?.promised_ready_time_range?.from ?? startedAt;
+  const preparingEnd =
+    promisedTimeRanges?.promised_ready_time_range?.to ?? fallbackPreparingEnd;
+  const deliveryStart =
+    promisedTimeRanges?.promised_delivery_time_range?.from ??
+    fallbackDeliveryStart;
   const deliveryEnd =
-    deliveryStart + Math.max(deliveryEstimatedTime ?? 35, 20) * 60 * 1000;
+    promisedTimeRanges?.promised_delivery_time_range?.to ?? fallbackDeliveryEnd;
   const titleColor = isDark ? "#f5f7fa" : "#17202b";
   const textColor = isDark ? "#c7d0da" : "#5f6670";
   const cardBg = isDark ? "rgba(18, 29, 42, 0.5)" : "#ffffff";
@@ -197,7 +209,7 @@ function OrderSuccessContent({
         <SuccessTimeCard
           icon={<IconChefHat size={27} stroke={1.9} />}
           label={t("checkout.successPreparing")}
-          time={`${formatUtcTime(startedAt)} – ${formatUtcTime(preparingEnd)}`}
+          time={`${formatUtcTime(preparingStart)} – ${formatUtcTime(preparingEnd)}`}
           cardBg={cardBg}
           cardBorder={cardBorder}
           green={green}
@@ -313,6 +325,7 @@ function OrderSuccessPanel({
   opened,
   startedAt,
   deliveryEstimatedTime,
+  promisedTimeRanges,
   isDark,
   onClose,
   onViewOrder,
@@ -341,6 +354,7 @@ function OrderSuccessPanel({
     <OrderSuccessContent
       startedAt={startedAt}
       deliveryEstimatedTime={deliveryEstimatedTime}
+      promisedTimeRanges={promisedTimeRanges}
       isDark={isDark}
       secondsLeft={secondsLeft}
       isMobile={Boolean(isMobile)}
@@ -430,6 +444,8 @@ export function CheckoutPage() {
   const [orderSuccessStartedAt, setOrderSuccessStartedAt] = useState(0);
   const [successDeliveryEstimatedTime, setSuccessDeliveryEstimatedTime] =
     useState<number | undefined>();
+  const [successPromisedTimeRanges, setSuccessPromisedTimeRanges] =
+    useState<PromisedTimeRanges | undefined>();
   const companyId = getCompanyId();
   const initialPartnerId = getPartnerId();
   const telegramId = getTelegramId();
@@ -804,7 +820,7 @@ export function CheckoutPage() {
     }
 
     try {
-      await createOrderMutation.mutateAsync({
+      const createdOrder = await createOrderMutation.mutateAsync({
         payload: orderPayload,
         file: paymentProofFile,
       });
@@ -812,6 +828,7 @@ export function CheckoutPage() {
       clearCart();
       setPaymentProofFile(null);
       setSuccessDeliveryEstimatedTime(deliveryEstimatedTime);
+      setSuccessPromisedTimeRanges(createdOrder?.promised_time_ranges);
       setOrderSuccessStartedAt(Date.now());
       setOrderSuccessOpened(true);
     } catch (error) {
@@ -890,6 +907,7 @@ export function CheckoutPage() {
         opened={orderSuccessOpened}
         startedAt={orderSuccessStartedAt}
         deliveryEstimatedTime={successDeliveryEstimatedTime}
+        promisedTimeRanges={successPromisedTimeRanges}
         isDark={isDark}
         onClose={closeOrderSuccess}
         onViewOrder={viewOrderFromSuccess}
