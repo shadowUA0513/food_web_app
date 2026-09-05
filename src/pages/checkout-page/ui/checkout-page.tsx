@@ -89,6 +89,7 @@ interface OrderSuccessPanelProps {
   deliveryEstimatedTime?: number;
   promisedTimeRanges?: PromisedTimeRanges;
   isDark: boolean;
+  brandColor: string;
   onClose: () => void;
   onViewOrder: () => void;
 }
@@ -107,6 +108,7 @@ function OrderSuccessContent({
   deliveryEstimatedTime,
   promisedTimeRanges,
   isDark,
+  brandColor,
   secondsLeft,
   isMobile,
   onClose,
@@ -134,7 +136,7 @@ function OrderSuccessContent({
   const textColor = isDark ? "#c7d0da" : "#5f6670";
   const cardBg = isDark ? "rgba(18, 29, 42, 0.5)" : "#ffffff";
   const cardBorder = isDark ? "#344557" : "#dfe4e8";
-  const green = isDark ? "#52e798" : "#2b9d62";
+  const green = brandColor;
 
   return (
     <Stack
@@ -191,7 +193,7 @@ function OrderSuccessContent({
             display: "grid",
             placeItems: "center",
             borderRadius: "50%",
-            background: isDark ? "#2b8a5d" : "#dff5e5",
+            background: hexToRgba(brandColor, isDark ? 0.3 : 0.15),
             color: green,
           }}
         >
@@ -327,6 +329,7 @@ function OrderSuccessPanel({
   deliveryEstimatedTime,
   promisedTimeRanges,
   isDark,
+  brandColor,
   onClose,
   onViewOrder,
 }: OrderSuccessPanelProps) {
@@ -356,6 +359,7 @@ function OrderSuccessPanel({
       deliveryEstimatedTime={deliveryEstimatedTime}
       promisedTimeRanges={promisedTimeRanges}
       isDark={isDark}
+      brandColor={brandColor}
       secondsLeft={secondsLeft}
       isMobile={Boolean(isMobile)}
       onClose={onClose}
@@ -909,6 +913,7 @@ export function CheckoutPage() {
         deliveryEstimatedTime={successDeliveryEstimatedTime}
         promisedTimeRanges={successPromisedTimeRanges}
         isDark={isDark}
+        brandColor={brandColor}
         onClose={closeOrderSuccess}
         onViewOrder={viewOrderFromSuccess}
       />
