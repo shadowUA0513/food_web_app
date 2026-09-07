@@ -3,6 +3,7 @@ export interface Partner {
   name?: string;
   name_uz?: string;
   name_ru?: string;
+  name_en?: string;
   full_name?: string;
   title?: string;
   phone?: string;

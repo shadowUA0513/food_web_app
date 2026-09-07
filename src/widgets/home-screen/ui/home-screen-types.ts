@@ -1,4 +1,4 @@
-﻿export type Locale = "uz" | "ru";
+export type Locale = "uz" | "ru" | "en";
 
 export interface HomeScreenPalette {
   pageBg: string;

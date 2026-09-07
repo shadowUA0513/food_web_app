@@ -38,7 +38,11 @@ import {
 export function ProductDetailsPage() {
   const { t, i18n } = useTranslation();
   const { brandColor, brandScale } = useBrandTheme();
-  const locale = i18n.resolvedLanguage === "uz" ? "uz" : "ru";
+  const locale = i18n.resolvedLanguage === "uz"
+    ? "uz"
+    : i18n.resolvedLanguage === "en"
+      ? "en"
+      : "ru";
   const [count, setCount] = useState(1);
   const computedColorScheme = useComputedColorScheme("light");
   const navigate = useNavigate();
@@ -93,13 +97,18 @@ export function ProductDetailsPage() {
     ? "linear-gradient(180deg, #0f1116 0%, #151922 100%)"
     : "linear-gradient(180deg, #f8f9fc 0%, #eef1f7 100%)";
 
-  function getLocalizedValue(nameUz: string, nameRu: string) {
-    return locale === "uz" ? nameUz || nameRu : nameRu || nameUz;
+  function getLocalizedValue(nameUz: string, nameRu: string, nameEn?: string) {
+    return locale === "uz"
+      ? nameUz || nameRu || nameEn || ""
+      : locale === "en"
+        ? nameEn || nameRu || nameUz || ""
+        : nameRu || nameUz || nameEn || "";
   }
 
   function getLocalizedDescription(
     descriptionUz?: string,
     descriptionRu?: string,
+    descriptionEn?: string,
   ) {
     if (locale === "uz") {
       return (
@@ -107,7 +116,10 @@ export function ProductDetailsPage() {
       );
     }
     return (
-      descriptionRu || descriptionUz || t("menu.productFallbackDescription")
+      (locale === "en" ? descriptionEn : descriptionRu) ||
+      descriptionRu ||
+      descriptionUz ||
+      t("menu.productFallbackDescription")
     );
   }
 
@@ -233,6 +245,7 @@ export function ProductDetailsPage() {
                     alt={getLocalizedValue(
                       activeProduct.name_uz,
                       activeProduct.name_ru,
+                      activeProduct.name_en,
                     )}
                     h={260}
                     fit="contain"
@@ -244,12 +257,14 @@ export function ProductDetailsPage() {
                     {getLocalizedValue(
                       activeProduct.name_uz,
                       activeProduct.name_ru,
+                      activeProduct.name_en,
                     )}
                   </Title>
                   <Text mb="sm" c={textColor}>
                     {getLocalizedDescription(
                       activeProduct.description_uz,
                       activeProduct.description,
+                      activeProduct.description_en,
                     )}
                   </Text>
 

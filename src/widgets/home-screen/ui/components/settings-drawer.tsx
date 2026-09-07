@@ -172,7 +172,7 @@ export function SettingsDrawer({
                 {t("settings.language")}
               </Text>
               <Text mt={"3px"} fz="0.74rem" c={textColor} lh={1.1}>
-                UZ / RU
+                UZ / RU / EN
               </Text>
             </Stack>
 
@@ -185,6 +185,7 @@ export function SettingsDrawer({
               data={[
                 { label: "UZ", value: "uz" },
                 { label: "RU", value: "ru" },
+                { label: "EN", value: "en" },
               ]}
               styles={{
                 root: {
